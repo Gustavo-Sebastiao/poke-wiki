@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FloatingActionButton from "@/components/FloatingActionButton";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,12 +29,14 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-white text-slate-800">
-        <Header />
-        <main className="flex-1 w-full flex flex-col">
-          {children}
-        </main>
-        <Footer />
-        <FloatingActionButton />
+        <AuthProvider>
+          <Header />
+          <main className="flex-1 w-full flex flex-col">
+            {children}
+          </main>
+          <Footer />
+          <FloatingActionButton />
+        </AuthProvider>
       </body>
     </html>
   );
