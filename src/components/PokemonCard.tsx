@@ -6,10 +6,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Edit2, Trash2 } from 'lucide-react';
 import { Pokemon, deletePokemon } from '@/lib/pokemonService';
-import { useAdmin } from '@/lib/useAdmin';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
-  const { isAdmin } = useAdmin();
+  const { role } = useAuth();
+  const isAdmin = role === 'admin' || role === 'superadmin';
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -38,7 +39,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
       
       {/* Botões de Ação Absolutos (Apenas Admin) */}
       {isAdmin && (
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 transition-all">
           <Link 
             href={`/admin/${pokemon.id}`}
             className="p-2 bg-white/80 backdrop-blur-sm rounded-full border border-slate-100 shadow-sm text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all"

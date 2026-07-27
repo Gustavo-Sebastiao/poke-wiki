@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import TagSelector, { POKEMON_TAGS } from '@/components/TagSelector';
 
 export default function NovoPokemonPage() {
   const router = useRouter();
@@ -25,9 +26,9 @@ export default function NovoPokemonPage() {
   
   const [formData, setFormData] = useState({
     name: '',
-    type: '',
+    type: [] as string[],
     description: '',
-    weaknesses: '',
+    weaknesses: [] as string[],
     image_url: ''
   });
 
@@ -43,7 +44,8 @@ export default function NovoPokemonPage() {
     try {
       const pokemonData = {
         ...formData,
-        weaknesses: formData.weaknesses.split(',').map(w => w.trim()).filter(w => w),
+        type: formData.type.join(', '),
+        weaknesses: formData.weaknesses,
       };
       
       await createPokemon(pokemonData);
@@ -90,16 +92,12 @@ export default function NovoPokemonPage() {
             </div>
             
             <div className="flex flex-col gap-2">
-              <label htmlFor="type" className="text-sm font-medium text-slate-600">Tipo</label>
-              <input
-                type="text"
-                id="type"
-                name="type"
-                required
-                placeholder="Ex: Fogo, Água"
-                className="px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800"
-                value={formData.type}
-                onChange={handleChange}
+              <label className="text-sm font-medium text-slate-600">Tipo (Máx. 2)</label>
+              <TagSelector 
+                options={POKEMON_TAGS}
+                selectedTags={formData.type}
+                onChange={(tags) => setFormData({ ...formData, type: tags })}
+                limit={2}
               />
             </div>
           </div>
@@ -118,15 +116,11 @@ export default function NovoPokemonPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="weaknesses" className="text-sm font-medium text-slate-600">Fraquezas (separadas por vírgula)</label>
-            <input
-              type="text"
-              id="weaknesses"
-              name="weaknesses"
-              placeholder="Ex: Água, Terra, Pedra"
-              className="px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800"
-              value={formData.weaknesses}
-              onChange={handleChange}
+            <label className="text-sm font-medium text-slate-600">Fraquezas</label>
+            <TagSelector 
+              options={POKEMON_TAGS}
+              selectedTags={formData.weaknesses}
+              onChange={(tags) => setFormData({ ...formData, weaknesses: tags })}
             />
           </div>
 

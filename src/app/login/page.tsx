@@ -4,11 +4,12 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { LogIn, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -74,14 +75,23 @@ export default function LoginPage() {
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-slate-600">Senha</label>
-            <input
-              type="password"
-              required
-              className="px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800 pr-12"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
           <button
@@ -93,12 +103,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-8 text-center text-sm text-slate-500">
-          Ainda não tem uma conta?{" "}
-          <Link href="/cadastro" className="text-[#59F7E2] font-bold hover:underline">
-            Cadastre-se
-          </Link>
-        </p>
+        {/* Link de cadastro removido por segurança. Apenas o Superadmin cria usuários agora. */}
       </div>
     </div>
   );

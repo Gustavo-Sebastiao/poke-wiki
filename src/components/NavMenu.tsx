@@ -119,8 +119,7 @@ export default function NavMenu() {
           isExpanded ? 'max-w-[500px] opacity-100 px-1' : 'max-w-0 opacity-0 px-0'
         }`}
       >
-        {/* Fundo estilo pílula com vidro embaçado e brilho */}
-        <div className="absolute inset-y-0 -left-8 -right-8 bg-white/20 backdrop-blur-md rounded-full shadow-[0_0_20px_rgba(255,255,255,0.4)] border border-white/40 z-0" />
+        {/* Fundo estilo pílula com vidro embaçado e brilho (removido a pedido) */}
         
         {/* Pílula branca indicando item ativo/hover */}
         <div 
