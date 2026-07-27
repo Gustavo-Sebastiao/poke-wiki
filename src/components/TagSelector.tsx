@@ -3,20 +3,28 @@
 import React from 'react';
 import Image, { StaticImageData } from 'next/image';
 
-import fogoImg from '@/assets/elements/fire _icon.png';
-import aguaImg from '@/assets/elements/c3613977779d28d1da20e3d814ac1ce0-removebg-preview.png';
-import eletricoImg from '@/assets/elements/st_small_507x507-pad_600x600_f8f8f8.u1-removebg-preview.png';
-import acoImg from '@/assets/elements/images-removebg-preview (5).png';
-import lutaImg from '@/assets/elements/images-removebg-preview.png';
-import psiquicoImg from '@/assets/elements/images-removebg-preview (2).png';
-import escuridaoImg from '@/assets/elements/images-removebg-preview (4).png';
-import normalImg from '@/assets/elements/images-removebg-preview (1).png';
-import dragaoImg from '@/assets/elements/images-removebg-preview (3).png';
-import fadaImg from '@/assets/elements/images-removebg-preview (6).png';
-import geloImg from '@/assets/elements/watermarked_img_1369503070115639316-Photoroom.png';
+import fogoImg from '@/assets/elements/fire_pokemon.png';
+import aguaImg from '@/assets/elements/water_pokemon.png';
+import eletricoImg from '@/assets/elements/eletric_pokemon.png';
+import acoImg from '@/assets/elements/steel_pokemon.png';
+import lutaImg from '@/assets/elements/fight_pokemon.png';
+import psiquicoImg from '@/assets/elements/psychic_pokemon.png';
+import escuridaoImg from '@/assets/elements/dark_pokemon.png';
+import normalImg from '@/assets/elements/normal_pokemon.png';
+import dragaoImg from '@/assets/elements/dragon_pokemon.png';
+import fadaImg from '@/assets/elements/fary_pokemon.png';
+import geloImg from '@/assets/elements/ice_pokemon.png';
+import plantaImg from '@/assets/elements/grass_pokemon.png';
+import insetoImg from '@/assets/elements/bug_pokemon.png';
+import voadorImg from '@/assets/elements/flying_pokemon.png';
+import fantasmaImg from '@/assets/elements/ghost_pokemon.png';
+import terraImg from '@/assets/elements/ground_pokemon.png';
+import venenosoImg from '@/assets/elements/poison_pokemon.png';
+import rochaImg from '@/assets/elements/rock_pokemon.png';
 
 export const POKEMON_TAGS = [
-  'Fogo', 'Água', 'Elétrico', 'Aço', 'Luta', 'Psíquico', 'Escuridão', 'Normal', 'Dragão', 'Fada', 'Gelo'
+  'Fogo', 'Água', 'Elétrico', 'Aço', 'Luta', 'Psíquico', 'Escuridão', 'Normal', 'Dragão', 'Fada', 'Gelo', 'Planta',
+  'Venenoso', 'Terra', 'Voador', 'Inseto', 'Rocha', 'Fantasma'
 ];
 
 export const tagImages: Record<string, StaticImageData> = {
@@ -31,9 +39,20 @@ export const tagImages: Record<string, StaticImageData> = {
   'Dragão': dragaoImg,
   'Fada': fadaImg,
   'Gelo': geloImg,
+  'Planta': plantaImg,
+  'Venenoso': venenosoImg,
+  'Terra': terraImg,
+  'Voador': voadorImg,
+  'Inseto': insetoImg,
+  'Rocha': rochaImg,
+  'Fantasma': fantasmaImg,
 };
 
-const tagStyles: Record<string, string> = {};
+const tagStyles: Record<string, string> = {
+  'Fogo': 'scale-[1.2]',
+  'Planta': 'scale-[1.5]',
+  'Luta': 'scale-[1.3]'
+};
 
 interface TagSelectorProps {
   options: string[];

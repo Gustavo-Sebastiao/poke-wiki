@@ -12,20 +12,38 @@ export interface Pokemon {
 
 // Buscar todos os Pokémons, opcionalmente filtrando por tipo
 export async function getPokemons(type?: string) {
-  let query = supabase.from('pokemons').select('*').order('created_at', { ascending: false });
+  let allData: any[] = [];
+  let from = 0;
+  const limit = 1000;
   
-  if (type) {
-    query = query.eq('type', type);
+  while (true) {
+    let query = supabase
+      .from('pokemons')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(from, from + limit - 1);
+    
+    if (type) {
+      query = query.eq('type', type);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Erro ao buscar pokémons:', error);
+      throw new Error(error.message);
+    }
+    
+    if (!data || data.length === 0) break;
+    
+    allData = [...allData, ...data];
+    
+    if (data.length < limit) break;
+    
+    from += limit;
   }
   
-  const { data, error } = await query;
-  
-  if (error) {
-    console.error('Erro ao buscar pokémons:', error);
-    throw new Error(error.message);
-  }
-  
-  return data;
+  return allData;
 }
 
 // Criar um novo Pokémon (Admin)

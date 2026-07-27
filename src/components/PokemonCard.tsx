@@ -91,28 +91,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
         </p>
       </div>
       
-      {pokemon.weaknesses && pokemon.weaknesses.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-slate-100">
-          <p className="text-xs text-slate-400 mb-2">Fraquezas</p>
-          <div className="flex flex-wrap gap-2">
-            {pokemon.weaknesses.map((weakness, i) => {
-              const img = tagImages[weakness];
-              return img ? (
-                <div key={i} className="relative w-8 h-8 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden" title={weakness}>
-                  <Image src={img} alt={weakness} fill className="object-cover scale-110 drop-shadow-sm" />
-                </div>
-              ) : (
-                <span
-                  key={i}
-                  className="px-2 py-1 text-[10px] font-medium bg-slate-100 text-slate-600 rounded-lg"
-                >
-                  {weakness}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
