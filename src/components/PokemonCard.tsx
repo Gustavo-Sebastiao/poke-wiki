@@ -36,7 +36,10 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
   };
 
   return (
-    <div className={`group relative flex flex-col bg-white rounded-3xl p-6 border border-slate-100 hover:border-slate-300 transition-all duration-300 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
+    <div 
+      onClick={() => router.push(`/pokemon/${pokemon.id}`)}
+      className={`group relative flex flex-col bg-white rounded-3xl p-6 border border-slate-100 hover:border-slate-300 hover:shadow-lg cursor-pointer transition-all duration-300 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
+    >
       
       {/* Tipos no Canto Superior Esquerdo */}
       {pokemon.type && (
@@ -59,6 +62,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 transition-all">
           <Link 
             href={`/admin/editar/${pokemon.id}`}
+            onClick={(e) => e.stopPropagation()}
             className="p-2 bg-white/80 backdrop-blur-sm rounded-full border border-slate-100 shadow-sm text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
             title="Editar Pokémon"
           >
