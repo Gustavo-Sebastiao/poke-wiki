@@ -103,29 +103,27 @@ export default function EditarPokemonPage() {
         )}
         
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="name" className="text-sm font-medium text-slate-600">Nome</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                className="px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800"
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="name" className="text-sm font-medium text-slate-600">Nome</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              required
+              className="px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800"
+              value={formData.name}
+              onChange={handleChange}
+            />
+          </div>
             
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-slate-600">Tipo (Máx. 2)</label>
-              <TagSelector 
-                options={POKEMON_TAGS}
-                selectedTags={formData.type}
-                onChange={(tags) => setFormData({ ...formData, type: tags })}
-                limit={2}
-              />
-            </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-slate-600">Tipo (Máx. 2)</label>
+            <TagSelector 
+              options={POKEMON_TAGS}
+              selectedTags={formData.type}
+              onChange={(tags) => setFormData({ ...formData, type: tags })}
+              limit={2}
+            />
           </div>
 
           <div className="flex flex-col gap-2">

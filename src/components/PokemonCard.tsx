@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Edit2, Trash2 } from 'lucide-react';
 import { Pokemon, deletePokemon } from '@/lib/pokemonService';
 import { useAuth } from '@/contexts/AuthContext';
+import { tagImages } from '@/components/TagSelector';
 
 export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
   const { role } = useAuth();
@@ -37,11 +38,27 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
   return (
     <div className={`group relative flex flex-col bg-white rounded-3xl p-6 border border-slate-100 hover:border-slate-300 transition-all duration-300 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
       
+      {/* Tipos no Canto Superior Esquerdo */}
+      {pokemon.type && (
+        <div className="absolute top-4 left-4 z-10 flex gap-1">
+          {pokemon.type.split(',').map((t, i) => {
+            const tag = t.trim();
+            const img = tagImages[tag];
+            if (!img) return null;
+            return (
+              <div key={i} className="relative w-8 h-8 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden" title={tag}>
+                <Image src={img} alt={tag} fill className="object-cover scale-110 drop-shadow-sm" />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Botões de Ação Absolutos (Apenas Admin) */}
       {isAdmin && (
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 transition-all">
           <Link 
-            href={`/admin/${pokemon.id}`}
+            href={`/admin/editar/${pokemon.id}`}
             className="p-2 bg-white/80 backdrop-blur-sm rounded-full border border-slate-100 shadow-sm text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
             title="Editar Pokémon"
           >
@@ -67,10 +84,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
           loading="lazy"
         />
       </div>
-      <div className="flex flex-col gap-1">
-        <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-          {pokemon.type}
-        </span>
+      <div className="flex flex-col gap-1 mt-2">
         <h3 className="text-lg font-bold text-slate-800">{pokemon.name}</h3>
         <p className="text-sm text-slate-500 line-clamp-2 mt-1">
           {pokemon.description}
@@ -81,14 +95,21 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
         <div className="mt-4 pt-4 border-t border-slate-100">
           <p className="text-xs text-slate-400 mb-2">Fraquezas</p>
           <div className="flex flex-wrap gap-2">
-            {pokemon.weaknesses.map((weakness, i) => (
-              <span
-                key={i}
-                className="px-2 py-1 text-[10px] font-medium bg-slate-100 text-slate-600 rounded-lg"
-              >
-                {weakness}
-              </span>
-            ))}
+            {pokemon.weaknesses.map((weakness, i) => {
+              const img = tagImages[weakness];
+              return img ? (
+                <div key={i} className="relative w-8 h-8 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden" title={weakness}>
+                  <Image src={img} alt={weakness} fill className="object-cover scale-110 drop-shadow-sm" />
+                </div>
+              ) : (
+                <span
+                  key={i}
+                  className="px-2 py-1 text-[10px] font-medium bg-slate-100 text-slate-600 rounded-lg"
+                >
+                  {weakness}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
