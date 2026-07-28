@@ -13,7 +13,8 @@ import pokebolaMetade2 from "@/assets/icons/pokebola_metade_2_-removebg-preview.
 
 const navItems = [
   { name: "Início", path: "/" },
-  { name: "Wiki", path: "/pokedex" },
+  { name: "Pokédex", path: "/pokedex" },
+  { name: "Itens", path: "/itens" },
 ];
 
 export default function NavMenu() {
@@ -97,7 +98,9 @@ export default function NavMenu() {
 
   return (
     <nav 
-      className="relative flex items-center h-12 md:h-14"
+      className={`relative flex items-center h-12 md:h-14 transition-all duration-300 ${
+        isExpanded ? 'bg-white dark:bg-slate-800 rounded-full shadow-md pr-2 py-1' : 'bg-transparent py-2'
+      }`}
       onMouseLeave={() => setHoveredIndex(null)}
     >
       {/* Metade Esquerda da Pokebola (Clica para fechar) */}

@@ -14,7 +14,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-slate-800 dark:bg-slate-100 opacity-50"></div>
+      <div className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-slate-800 dark:bg-slate-800 opacity-50"></div>
     );
   }
 
@@ -23,7 +23,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-14 h-14 bg-slate-800 text-amber-400 dark:bg-slate-100 dark:text-slate-800 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+      className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-14 h-14 bg-slate-800 text-amber-400 dark:bg-slate-700 dark:text-amber-300 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
       title="Alternar Tema"
     >
       {isDark ? <Moon className="w-6 h-6" /> : <Sun className="w-6 h-6" />}

@@ -104,7 +104,7 @@ const GifGallery = () => {
         <Col gifs={col3} direction="up" />
         <Col gifs={col4} direction="down" />
       </div>
-      <div className={`${styles.overlay} bg-gradient-to-r from-transparent via-[#fafafa]/90 to-[#fafafa] dark:via-slate-900/90 dark:to-slate-900`}></div>
+      <div className={`${styles.overlay} bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(250,250,250,0.95)_75%,#fafafa_100%)] dark:bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(15,23,42,0.95)_75%,#0f172a_100%)]`}></div>
       
       {/* Texto e botão flutuantes com fade in da direita */}
       <div className={`absolute right-[2%] md:right-[4%] lg:right-[4%] w-[90%] md:w-[40%] z-30 flex flex-col items-end justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'}`}>
