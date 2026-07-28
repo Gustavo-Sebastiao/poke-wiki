@@ -88,33 +88,33 @@ export default function HomeCarousel() {
     <div className={`relative w-full h-full rounded-none overflow-hidden transition-colors duration-700 shadow-xl ${slides[current].bgColor}`}>
       
       {/* Container branco na esquerda */}
-      <div className="absolute top-0 bottom-0 left-0 w-full md:w-[65%] bg-white p-8 md:p-16 flex flex-col justify-center z-10">
+      <div className="absolute top-0 bottom-0 left-0 w-full md:w-[65%] bg-white dark:bg-slate-900 p-8 md:p-16 flex flex-col justify-center z-10">
         
         {/* Bolinhas de fundo */}
-        <div className="absolute top-[-80px] left-[-40px] w-64 h-64 md:w-96 md:h-96 bg-slate-100 rounded-full opacity-60 pointer-events-none"></div>
-        <div className="absolute bottom-[-40px] right-[5%] w-40 h-40 md:w-56 md:h-56 bg-slate-100 rounded-full opacity-60 pointer-events-none"></div>
+        <div className="absolute top-[-80px] left-[-40px] w-64 h-64 md:w-96 md:h-96 bg-slate-100 dark:bg-slate-800 rounded-full opacity-60 pointer-events-none"></div>
+        <div className="absolute bottom-[-40px] right-[5%] w-40 h-40 md:w-56 md:h-56 bg-slate-100 dark:bg-slate-800 rounded-full opacity-60 pointer-events-none"></div>
 
         <div key={`text-${current}`} className="relative z-20 flex flex-col animate-fade-in-right" style={{ animationDelay: '300ms' }}>
-          <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter mb-1 transition-all">
+          <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-1 transition-all">
             {slides[current].title}
           </h2>
-          <h3 className="text-3xl md:text-5xl font-light italic text-slate-500 mb-4 transition-all uppercase">
+          <h3 className="text-3xl md:text-5xl font-light italic text-slate-500 dark:text-slate-400 dark:text-slate-500 mb-4 transition-all uppercase">
             {slides[current].subtitle}
           </h3>
           
-          <div className="text-3xl font-bold text-slate-800 border-b-2 border-slate-200 pb-4 inline-block max-w-max mb-6">
+          <div className="text-3xl font-bold text-slate-800 dark:text-slate-100 border-b-2 border-slate-200 dark:border-slate-700 pb-4 inline-block max-w-max mb-6">
             {slides[current].price}
           </div>
           
-          <p className="text-slate-600 text-sm md:text-base max-w-md mb-8 h-20 overflow-hidden transition-all">
+          <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base max-w-md mb-8 h-20 overflow-hidden transition-all">
             {slides[current].description}
           </p>
           
           <div className="flex items-center gap-6">
-            <button className={`px-10 py-3 bg-white text-slate-600 font-semibold rounded-full text-lg shadow-md border-2 transition-all hover:scale-105 flex items-center gap-2 ${slides[current].buttonColor} ${slides[current].buttonHover}`}>
+            <button className={`px-10 py-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-semibold rounded-full text-lg shadow-md border-2 transition-all hover:scale-105 flex items-center gap-2 ${slides[current].buttonColor} ${slides[current].buttonHover}`}>
               VER MAIS
             </button>
-            <button className="text-slate-600 font-semibold hover:text-slate-900 transition-colors">
+            <button className="text-slate-600 dark:text-slate-300 font-semibold hover:text-slate-900 dark:text-white transition-colors">
               Explorar Wiki
             </button>
           </div>
@@ -149,7 +149,7 @@ export default function HomeCarousel() {
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 hidden md:block">
         <button 
           onClick={prevSlide} 
-          className="p-2 text-slate-400 hover:text-slate-800 transition bg-white/50 hover:bg-white rounded-full backdrop-blur-sm shadow-sm"
+          className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:text-slate-100 transition bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:bg-slate-900 rounded-full backdrop-blur-sm shadow-sm"
         >
           <ChevronLeft size={32} />
         </button>

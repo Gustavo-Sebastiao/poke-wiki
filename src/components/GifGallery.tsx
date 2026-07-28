@@ -53,7 +53,10 @@ const Col = ({ gifs, direction }: { gifs: any[], direction: 'up' | 'down' }) => 
   return (
     <div className={`${styles.column} ${direction === 'up' ? styles.marqueeUp : styles.marqueeDown}`}>
       {repeatedGifs.map((gif, index) => (
-        <div key={index} className={styles.gifItem}>
+        <div 
+          key={index} 
+          className={`${styles.gifItem} bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700`}
+        >
           <Image 
             src={gif} 
             alt={`Pokemon GIF ${index}`} 
@@ -94,24 +97,24 @@ const GifGallery = () => {
   }, []);
 
   return (
-    <div className={styles.galleryContainer} ref={containerRef}>
+    <div className={`${styles.galleryContainer} bg-[#fafafa] dark:bg-slate-900`} ref={containerRef}>
       <div className={styles.galleryWrapper}>
         <Col gifs={col1} direction="up" />
         <Col gifs={col2} direction="down" />
         <Col gifs={col3} direction="up" />
         <Col gifs={col4} direction="down" />
       </div>
-      <div className={styles.overlay}></div>
+      <div className={`${styles.overlay} bg-gradient-to-r from-transparent via-[#fafafa]/90 to-[#fafafa] dark:via-slate-900/90 dark:to-slate-900`}></div>
       
       {/* Texto e botão flutuantes com fade in da direita */}
       <div className={`absolute right-[2%] md:right-[4%] lg:right-[4%] w-[90%] md:w-[40%] z-30 flex flex-col items-end justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'}`}>
-        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-white tracking-tighter mb-4 uppercase text-right drop-shadow-md leading-tight">
+        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-slate-800 dark:text-white tracking-tighter mb-4 uppercase text-right drop-shadow-md leading-tight">
           Comece sua<br/>Aventura
         </h2>
-        <p className="text-slate-600 text-base md:text-lg font-medium mb-8 max-w-md text-right">
+        <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg font-medium mb-8 max-w-md text-right">
           Desbrave o universo Pokémon. Milhares de espécies prontas para serem descobertas. Tire suas dúvidas e conheça cada detalhe desse mundo fascinante!
         </p>
-        <button className="px-10 py-3 bg-white text-slate-600 font-semibold rounded-full text-lg shadow-md border-2 border-teal-400 transition-all hover:scale-105 hover:bg-teal-50 flex items-center gap-2">
+        <button className="px-10 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 font-semibold rounded-full text-lg shadow-md border-2 border-teal-400 dark:border-teal-500 transition-all hover:scale-105 hover:bg-teal-50 dark:hover:bg-teal-900/30 flex items-center gap-2">
           Acessar a Wiki
         </button>
       </div>

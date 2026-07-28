@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 
+import AdminToggle from './AdminToggle';
+
 import pokebolaCompleta from "@/assets/icons/pokebola_completa-removebg-preview.png";
 import pokebolaMetade1 from "@/assets/icons/pokebola_metade_1_-removebg-preview.png";
 import pokebolaMetade2 from "@/assets/icons/pokebola_metade_2_-removebg-preview.png";
@@ -12,7 +14,6 @@ import pokebolaMetade2 from "@/assets/icons/pokebola_metade_2_-removebg-preview.
 const navItems = [
   { name: "Início", path: "/" },
   { name: "Wiki", path: "/pokedex" },
-  { name: "Ajuda", path: "/ajuda" },
 ];
 
 export default function NavMenu() {
@@ -115,15 +116,15 @@ export default function NavMenu() {
       
       {/* Área Central (Links + Fundo) que expande e colapsa */}
       <div 
-        className={`relative z-10 flex items-center h-full transition-all duration-500 ease-in-out overflow-hidden ${
-          isExpanded ? 'max-w-[500px] opacity-100 px-1' : 'max-w-0 opacity-0 px-0'
+        className={`relative z-10 flex items-center h-full transition-all duration-500 ease-in-out ${
+          isExpanded ? 'max-w-[500px] opacity-100 px-1 overflow-visible' : 'max-w-0 opacity-0 px-0 overflow-hidden'
         }`}
       >
         {/* Fundo estilo pílula com vidro embaçado e brilho (removido a pedido) */}
         
         {/* Pílula branca indicando item ativo/hover */}
         <div 
-          className="absolute top-1.5 bottom-1.5 bg-white/80 rounded-full shadow-sm transition-all duration-300 ease-out z-0"
+          className="absolute top-1.5 bottom-1.5 bg-white/80 dark:bg-slate-700/80 rounded-full shadow-sm transition-all duration-300 ease-out z-0"
           style={{
             left: `${pillStyle.left}px`,
             width: `${pillStyle.width}px`,
@@ -145,13 +146,17 @@ export default function NavMenu() {
                 }}
                 onMouseEnter={() => setHoveredIndex(index)}
                 className={`px-4 md:px-5 py-2 text-sm md:text-base transition-colors duration-300 ${
-                  isHovered || isActive ? "text-slate-900 font-bold" : "text-slate-700 hover:text-slate-900 font-medium"
+                  isHovered || isActive ? "text-slate-900 dark:text-white font-bold" : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium"
                 }`}
               >
                 {item.name}
               </Link>
             );
           })}
+          
+          <div className="px-2 pl-4 flex items-center z-20">
+             <AdminToggle />
+          </div>
         </div>
       </div>
 

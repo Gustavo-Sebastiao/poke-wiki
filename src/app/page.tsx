@@ -57,7 +57,7 @@ export default function Home() {
   }, [activeSection]);
 
   return (
-    <main className="fixed inset-0 w-full h-full bg-slate-50 overflow-hidden">
+    <main className="fixed inset-0 w-full h-full bg-slate-50 dark:bg-slate-900 overflow-hidden">
       {/* Primeira Sessão: O Carrossel que já existia */}
       <section 
         className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${

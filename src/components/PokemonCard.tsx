@@ -44,7 +44,7 @@ export default function PokemonCard({
   return (
     <div 
       onClick={() => onSelect ? onSelect(pokemon) : router.push(`/pokemon/${pokemon.id}`)}
-      className={`group relative flex flex-col bg-white rounded-3xl p-6 border border-slate-100 hover:border-slate-300 hover:shadow-lg cursor-pointer transition-all duration-300 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
+      className={`group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-lg cursor-pointer transition-all duration-300 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
     >
       
       {/* Tipos no Canto Superior Esquerdo */}
@@ -55,7 +55,7 @@ export default function PokemonCard({
             const img = tagImages[tag];
             if (!img) return null;
             return (
-              <div key={i} className="relative w-8 h-8 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden" title={tag}>
+              <div key={i} className="relative w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center overflow-hidden" title={tag}>
                 <Image src={img} alt={tag} fill className="object-cover scale-110 drop-shadow-sm" />
               </div>
             );
@@ -69,14 +69,14 @@ export default function PokemonCard({
           <Link 
             href={`/admin/editar/${pokemon.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="p-2 bg-white/80 backdrop-blur-sm rounded-full border border-slate-100 shadow-sm text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
+            className="p-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-full border border-slate-100 dark:border-slate-700 shadow-sm text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
             title="Editar Pokémon"
           >
             <Edit2 className="w-4 h-4" />
           </Link>
           <button 
             onClick={handleDelete}
-            className="p-2 bg-white/80 backdrop-blur-sm rounded-full border border-slate-100 shadow-sm text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+            className="p-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-full border border-slate-100 dark:border-slate-700 shadow-sm text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
             title="Excluir Pokémon"
           >
             <Trash2 className="w-4 h-4" />
@@ -95,8 +95,8 @@ export default function PokemonCard({
         />
       </div>
       <div className="flex flex-col gap-1 mt-2">
-        <h3 className="text-lg font-bold text-slate-800">{pokemon.name}</h3>
-        <p className="text-sm text-slate-500 line-clamp-2 mt-1">
+        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">{pokemon.name}</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
           {pokemon.description}
         </p>
       </div>

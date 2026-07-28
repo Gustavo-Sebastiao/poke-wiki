@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, LogIn, UserCircle, Plus, Users } from 'lucide-react';
+import { LogOut, UserCircle, Plus, Users, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminToggle() {
@@ -35,12 +35,12 @@ export default function AdminToggle() {
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-fade-in-right">
-            <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-              <p className="text-sm font-semibold text-slate-800 truncate">
+          <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50 animate-fade-in-right">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
                 {user.email}
               </p>
-              <p className="text-xs font-medium text-slate-500 uppercase mt-0.5">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase mt-0.5">
                 {role || 'user'}
               </p>
             </div>
@@ -49,7 +49,7 @@ export default function AdminToggle() {
               <Link 
                 href="/admin" 
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
               >
                 <UserCircle className="w-4 h-4" />
                 Meu Painel
@@ -59,7 +59,7 @@ export default function AdminToggle() {
                 <Link 
                   href="/admin/novo" 
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Adicionar Pokémons
@@ -70,21 +70,21 @@ export default function AdminToggle() {
                 <Link 
                   href="/admin/usuarios" 
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
                 >
                   <Users className="w-4 h-4" />
                   Adicionar Admins
                 </Link>
               )}
               
-              <div className="h-px bg-slate-100 my-1"></div>
+              <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
               
               <button
                 onClick={() => {
                   setIsOpen(false);
                   signOut();
                 }}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors w-full text-left"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors w-full text-left"
               >
                 <LogOut className="w-4 h-4" />
                 Sair
@@ -99,10 +99,10 @@ export default function AdminToggle() {
   return (
     <Link
       href="/login"
-      className="flex items-center gap-2 px-4 py-2 bg-[#59F7E2] text-slate-800 rounded-full text-sm font-bold shadow-soft hover:shadow-soft-hover transition-all hover:-translate-y-0.5"
+      className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-full text-sm font-bold shadow-soft hover:shadow-soft-hover transition-all hover:-translate-y-0.5"
     >
-      <LogIn className="w-4 h-4" />
-      <span className="hidden sm:inline">Fazer Login</span>
+      <Shield className="w-4 h-4" />
+      <span className="hidden sm:inline">Admin</span>
     </Link>
   );
 }

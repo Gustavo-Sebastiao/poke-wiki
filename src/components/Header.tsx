@@ -1,4 +1,3 @@
-import AdminToggle from './AdminToggle';
 import NavMenu from './NavMenu';
 
 export default function Header() {
@@ -17,7 +16,6 @@ export default function Header() {
         
         {/* Lado Direito */}
         <div className="flex-1 flex justify-end">
-          <AdminToggle />
         </div>
       </div>
     </header>

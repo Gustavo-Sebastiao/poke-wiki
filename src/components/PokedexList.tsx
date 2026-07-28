@@ -54,12 +54,12 @@ function getPokemonIdFromUrl(url?: string): number | null {
 }
 
 const ToggleSwitch = ({ label, checked, onChange }: { label: string, checked: boolean, onChange: () => void }) => (
-  <label className="flex items-center justify-between cursor-pointer p-3 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors select-none">
-    <span className="text-slate-700 font-medium text-sm">{label}</span>
+  <label className="flex items-center justify-between cursor-pointer p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors select-none">
+    <span className="text-slate-700 dark:text-slate-200 font-medium text-sm">{label}</span>
     <div className="relative flex-shrink-0 ml-4">
       <input type="checkbox" className="sr-only" checked={checked} onChange={onChange} />
       <div className={`block w-10 h-6 rounded-full transition-colors ${checked ? 'bg-[#59F7E2]' : 'bg-slate-300'}`}></div>
-      <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${checked ? 'transform translate-x-4' : ''}`}></div>
+      <div className={`absolute left-1 top-1 bg-white dark:bg-slate-800 w-4 h-4 rounded-full transition-transform ${checked ? 'transform translate-x-4' : ''}`}></div>
     </div>
   </label>
 );
@@ -273,7 +273,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   };
 
   if (!isInitialized) {
-    return <div className="w-full flex items-center justify-center p-12 text-slate-500">Carregando Pokédex...</div>;
+    return <div className="w-full flex items-center justify-center p-12 text-slate-500 dark:text-slate-400 dark:text-slate-500">Carregando Pokédex...</div>;
   }
 
   return (
@@ -290,14 +290,14 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
             placeholder="Procurar"
             value={searchTerm}
             onChange={handleSearch}
-            className="w-full px-2 pr-12 py-4 bg-white/95 backdrop-blur-md border-b-2 border-slate-800 rounded-none text-slate-800 placeholder-slate-500 focus:outline-none focus:border-[#59F7E2] transition-all text-xl font-medium h-full"
+            className="w-full px-2 pr-12 py-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b-2 border-slate-800 rounded-none text-slate-800 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#59F7E2] transition-all text-xl font-medium h-full"
           />
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-800 w-6 h-6 pointer-events-none" />
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-800 dark:text-slate-100 w-6 h-6 pointer-events-none" />
         </div>
 
         <button 
           onClick={() => setShowMobileFilters(true)}
-          className="md:hidden shrink-0 w-[60px] bg-teal-50/95 backdrop-blur-md border-2 border-[#59F7E2] rounded-full shadow-lg flex items-center justify-center text-slate-600 hover:scale-105 transition-all"
+          className="md:hidden shrink-0 w-[60px] bg-teal-50/95 backdrop-blur-md border-2 border-[#59F7E2] rounded-full shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-all"
           title="Filtros"
         >
           <Menu className="w-6 h-6" />
@@ -310,25 +310,25 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         <div className="relative w-full md:w-auto">
           <button 
             onClick={() => setOpenDropdown(openDropdown === 'gen' ? null : 'gen')}
-            className={`w-full px-4 py-3 md:py-2.5 bg-white text-slate-600 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'gen' ? 'border-[#59F7E2] bg-teal-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'gen' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'}`}
           >
             {selectedGenerations.length > 0 ? `${selectedGenerations.length} selecionadas` : 'Todas as gerações'}
-            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openDropdown === 'gen' ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'gen' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'gen' && (
-            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white border border-slate-200 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[300px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 text-sm mb-3">Geração</h3>
+            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[300px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Geração</h3>
               <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {GENERATIONS.map(gen => (
-                  <label key={gen.id} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <label key={gen.id} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 dark:bg-slate-800/50 transition-colors">
                     <input 
                       type="checkbox" 
                       checked={selectedGenerations.includes(gen.id)}
                       onChange={() => toggleGen(gen.id)}
-                      className="w-4 h-4 rounded border-slate-300 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
                     />
-                    <span className="text-slate-600 group-hover:text-slate-900 transition-colors font-medium text-sm">
+                    <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 transition-colors font-medium text-sm">
                       {gen.name}
                     </span>
                   </label>
@@ -342,15 +342,15 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         <div className="relative w-full md:w-auto">
           <button 
             onClick={() => setOpenDropdown(openDropdown === 'type' ? null : 'type')}
-            className={`w-full px-4 py-3 md:py-2.5 bg-white text-slate-600 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'type' ? 'border-[#59F7E2] bg-teal-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'type' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'}`}
           >
             {selectedTypes.length > 0 ? `${selectedTypes.length} tipos` : 'Todos os tipos'}
-            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openDropdown === 'type' ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'type' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'type' && (
-            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white border border-slate-200 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[320px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 text-sm mb-3">Tipo</h3>
+            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[320px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Tipo</h3>
               <div className="flex flex-wrap gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {POKEMON_TAGS.map(type => {
                   const isSelected = selectedTypes.includes(type);
@@ -361,7 +361,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
                       className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${
                         isSelected 
                           ? 'bg-[#59F7E2] text-slate-900 border-[#59F7E2] shadow-md' 
-                          : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-400'
+                          : 'bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-400'
                       }`}
                     >
                       {type}
@@ -377,25 +377,25 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         <div className="relative w-full md:w-auto">
           <button 
             onClick={() => setOpenDropdown(openDropdown === 'rarity' ? null : 'rarity')}
-            className={`w-full px-4 py-3 md:py-2.5 bg-white text-slate-600 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'rarity' ? 'border-[#59F7E2] bg-teal-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'rarity' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'}`}
           >
             {selectedRarities.length > 0 ? `${selectedRarities.length} selecionadas` : 'Qualquer raridade'}
-            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openDropdown === 'rarity' ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'rarity' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'rarity' && (
-            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white border border-slate-200 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[240px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 text-sm mb-3">Raridade</h3>
+            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[240px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Raridade</h3>
               <div className="flex flex-col gap-2">
                 {RARITIES.map(rarity => (
-                  <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                  <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 dark:bg-slate-800/50 transition-colors">
                     <input 
                       type="checkbox" 
                       checked={selectedRarities.includes(rarity)}
                       onChange={() => toggleRarity(rarity)}
-                      className="w-4 h-4 rounded border-slate-300 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
                     />
-                    <span className="text-slate-600 group-hover:text-slate-900 transition-colors font-medium text-sm">
+                    <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 transition-colors font-medium text-sm">
                       {rarity}
                     </span>
                   </label>
@@ -409,15 +409,15 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         <div className="relative w-full md:w-auto">
           <button 
             onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
-            className={`w-full px-4 py-3 md:py-2.5 bg-white text-slate-600 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'sort' ? 'border-[#59F7E2] bg-teal-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'sort' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'}`}
           >
             Ordenar por {sortOrder === 'alpha' ? 'Alfabética' : sortOrder === 'rarity' ? 'Raridade' : sortOrder === 'gen' ? 'Geração' : sortOrder === 'element' ? 'Elementar' : 'Padrão'}
-            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'sort' && (
-            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white border border-slate-200 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[280px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 text-sm mb-3">Ordem</h3>
+            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[280px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Ordem</h3>
               <div className="flex flex-col gap-2">
                 <ToggleSwitch label="Lista em ordem alfabética" checked={sortOrder === 'alpha'} onChange={() => handleToggleSort('alpha')} />
                 <ToggleSwitch label="Lista em ordem de raridade" checked={sortOrder === 'rarity'} onChange={() => handleToggleSort('rarity')} />
@@ -432,15 +432,15 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         <div className="relative w-full md:w-auto">
           <button 
             onClick={() => setOpenDropdown(openDropdown === 'options' ? null : 'options')}
-            className={`w-full px-4 py-3 md:py-2.5 bg-white text-slate-600 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'options' ? 'border-[#59F7E2] bg-teal-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'options' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-800/50'}`}
           >
             {showMegas ? 'Exibindo Megas' : 'Outras opções'}
-            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openDropdown === 'options' ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'options' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'options' && (
-            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white border border-slate-200 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[240px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 text-sm mb-3">Exibição</h3>
+            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[240px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Exibição</h3>
               <ToggleSwitch label="Mega evoluções" checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
             </div>
           )}
@@ -450,7 +450,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         {(selectedTypes.length > 0 || selectedGenerations.length > 0 || selectedRarities.length > 0 || showMegas || sortOrder !== null) && (
           <button 
             onClick={() => { setSelectedTypes([]); setSelectedGenerations([]); setSelectedRarities([]); setShowMegas(false); setSortOrder(null); setCurrentPage(1); setOpenDropdown(null); }}
-            className="w-full md:w-auto px-4 py-3 md:py-2.5 bg-white text-slate-600 font-semibold rounded-xl md:rounded-full text-sm shadow-md border-2 border-red-400 transition-all md:hover:scale-105 hover:bg-red-50 flex items-center justify-center whitespace-nowrap md:ml-auto mt-2 md:mt-0"
+            className="w-full md:w-auto px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold rounded-xl md:rounded-full text-sm shadow-md border-2 border-red-400 transition-all md:hover:scale-105 hover:bg-red-50 flex items-center justify-center whitespace-nowrap md:ml-auto mt-2 md:mt-0"
           >
             Limpar filtros
           </button>
@@ -459,11 +459,11 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
 
       {/* Menu Modal de Filtros Mobile */}
       {showMobileFilters && (
-        <div className="fixed inset-0 bg-white z-[200] flex flex-col md:hidden animate-fade-in-down overflow-hidden">
+        <div className="fixed inset-0 bg-white dark:bg-slate-800 z-[200] flex flex-col md:hidden animate-fade-in-down overflow-hidden">
           {/* Header */}
-          <div className="flex-none flex items-center justify-between p-5 border-b border-slate-100 bg-white shadow-sm">
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Menu className="w-6 h-6 text-[#59F7E2]"/> Filtros</h2>
-            <button onClick={() => setShowMobileFilters(false)} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 transition-colors">
+          <div className="flex-none flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><Menu className="w-6 h-6 text-[#59F7E2]"/> Filtros</h2>
+            <button onClick={() => setShowMobileFilters(false)} className="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-full text-slate-600 dark:text-slate-300 transition-colors">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -472,17 +472,17 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
           <div className="flex-1 overflow-y-auto p-5 pb-32 flex flex-col gap-8 custom-scrollbar">
             {/* Geração */}
             <div>
-              <h3 className="font-bold text-slate-800 mb-4 text-lg border-b border-slate-100 pb-2">Geração</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Geração</h3>
               <div className="flex flex-col gap-3">
                 {GENERATIONS.map(gen => (
-                  <label key={gen.id} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+                  <label key={gen.id} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 dark:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700">
                     <input 
                       type="checkbox" 
                       checked={selectedGenerations.includes(gen.id)}
                       onChange={() => toggleGen(gen.id)}
-                      className="w-5 h-5 rounded border-slate-300 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
+                      className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
                     />
-                    <span className="text-slate-700 font-medium text-base">
+                    <span className="text-slate-700 dark:text-slate-200 font-medium text-base">
                       {gen.name}
                     </span>
                   </label>
@@ -492,7 +492,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
 
             {/* Tipo */}
             <div>
-              <h3 className="font-bold text-slate-800 mb-4 text-lg border-b border-slate-100 pb-2">Tipo</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Tipo</h3>
               <div className="flex flex-wrap gap-2">
                 {POKEMON_TAGS.map(type => {
                   const isSelected = selectedTypes.includes(type);
@@ -503,7 +503,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
                       className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
                         isSelected 
                           ? 'bg-[#59F7E2] text-slate-900 border-[#59F7E2] shadow-md' 
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600'
                       }`}
                     >
                       {type}
@@ -515,17 +515,17 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
 
             {/* Raridade */}
             <div>
-              <h3 className="font-bold text-slate-800 mb-4 text-lg border-b border-slate-100 pb-2">Raridade</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Raridade</h3>
               <div className="flex flex-col gap-3">
                 {RARITIES.map(rarity => (
-                  <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+                  <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 dark:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700">
                     <input 
                       type="checkbox" 
                       checked={selectedRarities.includes(rarity)}
                       onChange={() => toggleRarity(rarity)}
-                      className="w-5 h-5 rounded border-slate-300 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
+                      className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
                     />
-                    <span className="text-slate-700 font-medium text-base">
+                    <span className="text-slate-700 dark:text-slate-200 font-medium text-base">
                       {rarity}
                     </span>
                   </label>
@@ -535,7 +535,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
 
             {/* Ordenação */}
             <div>
-              <h3 className="font-bold text-slate-800 mb-4 text-lg border-b border-slate-100 pb-2">Ordenação</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Ordenação</h3>
               <div className="flex flex-col gap-4">
                 <ToggleSwitch label="Lista em ordem alfabética" checked={sortOrder === 'alpha'} onChange={() => handleToggleSort('alpha')} />
                 <ToggleSwitch label="Lista em ordem de raridade" checked={sortOrder === 'rarity'} onChange={() => handleToggleSort('rarity')} />
@@ -546,13 +546,13 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
             
             {/* Outras opções */}
             <div>
-              <h3 className="font-bold text-slate-800 mb-4 text-lg border-b border-slate-100 pb-2">Outras Opções</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Outras Opções</h3>
               <ToggleSwitch label="Exibir Mega evoluções" checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
             </div>
           </div>
           
           {/* Footer Buttons */}
-          <div className="flex-none p-5 bg-white border-t border-slate-100 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)] flex gap-4 mt-auto">
+          <div className="flex-none p-5 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)] flex gap-4 mt-auto">
              {(selectedTypes.length > 0 || selectedGenerations.length > 0 || selectedRarities.length > 0 || showMegas || sortOrder !== null) && (
                 <button 
                   onClick={() => { setSelectedTypes([]); setSelectedGenerations([]); setSelectedRarities([]); setShowMegas(false); setSortOrder(null); setCurrentPage(1); }}
@@ -592,12 +592,12 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 disabled={currentPage === 1}
-                className="p-3 rounded-full bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
-              <span className="text-slate-600 font-medium px-4">
+              <span className="text-slate-600 dark:text-slate-300 font-medium px-4">
                 Página {currentPage} de {totalPages}
               </span>
               
@@ -607,7 +607,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 disabled={currentPage === totalPages}
-                className="p-3 rounded-full bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-800/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -615,8 +615,8 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
           )}
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center p-16 bg-white rounded-3xl shadow-soft mt-8">
-          <p className="text-slate-500 mb-4 text-center">Nenhum Pokémon encontrado com os filtros atuais.</p>
+        <div className="flex flex-col items-center justify-center p-16 bg-white dark:bg-slate-800 rounded-3xl shadow-soft mt-8">
+          <p className="text-slate-500 dark:text-slate-400 dark:text-slate-500 mb-4 text-center">Nenhum Pokémon encontrado com os filtros atuais.</p>
           {(selectedTypes.length > 0 || selectedGenerations.length > 0 || selectedRarities.length > 0 || searchTerm || showMegas || sortOrder !== null) && (
             <button 
               onClick={() => { setSelectedTypes([]); setSelectedGenerations([]); setSelectedRarities([]); setSearchTerm(''); setShowMegas(false); setSortOrder(null); setCurrentPage(1); }}
