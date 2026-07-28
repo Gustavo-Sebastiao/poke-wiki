@@ -9,7 +9,13 @@ import { Pokemon, deletePokemon } from '@/lib/pokemonService';
 import { useAuth } from '@/contexts/AuthContext';
 import { tagImages } from '@/components/TagSelector';
 
-export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
+export default function PokemonCard({ 
+  pokemon, 
+  onSelect 
+}: { 
+  pokemon: Pokemon;
+  onSelect?: (pokemon: Pokemon) => void;
+}) {
   const { role } = useAuth();
   const isAdmin = role === 'admin' || role === 'superadmin';
   const router = useRouter();
@@ -37,7 +43,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
 
   return (
     <div 
-      onClick={() => router.push(`/pokemon/${pokemon.id}`)}
+      onClick={() => onSelect ? onSelect(pokemon) : router.push(`/pokemon/${pokemon.id}`)}
       className={`group relative flex flex-col bg-white rounded-3xl p-6 border border-slate-100 hover:border-slate-300 hover:shadow-lg cursor-pointer transition-all duration-300 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
     >
       

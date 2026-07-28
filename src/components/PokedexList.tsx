@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PokemonCard from '@/components/PokemonCard';
+import PokemonModal from '@/components/PokemonModal';
 import { Search, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import { Pokemon } from '@/lib/pokemonService';
 
@@ -39,13 +41,45 @@ function getPokemonIdFromUrl(url?: string): number | null {
 }
 
 export default function PokedexList({ initialPokemons }: PokedexListProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedGenerations, setSelectedGenerations] = useState<number[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Restore state from sessionStorage on mount
+  useEffect(() => {
+    const saved = sessionStorage.getItem('pokedex_state');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.searchTerm !== undefined) setSearchTerm(parsed.searchTerm);
+        if (parsed.currentPage !== undefined) setCurrentPage(parsed.currentPage);
+        if (parsed.selectedTypes !== undefined) setSelectedTypes(parsed.selectedTypes);
+        if (parsed.selectedGenerations !== undefined) setSelectedGenerations(parsed.selectedGenerations);
+      } catch (e) {}
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // Save state to sessionStorage when it changes
+  useEffect(() => {
+    if (!isInitialized) return;
+    const stateToSave = {
+      searchTerm,
+      currentPage,
+      selectedTypes,
+      selectedGenerations
+    };
+    sessionStorage.setItem('pokedex_state', JSON.stringify(stateToSave));
+  }, [searchTerm, currentPage, selectedTypes, selectedGenerations, isInitialized]);
 
   // Close menu on click outside
   useEffect(() => {
@@ -122,8 +156,34 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
     setCurrentPage(1);
   };
 
+  const selectedPokemonId = searchParams.get('pokemon');
+  const selectedPokemon = useMemo(() => {
+    if (!selectedPokemonId) return null;
+    return initialPokemons.find(p => p.id === selectedPokemonId) || null;
+  }, [selectedPokemonId, initialPokemons]);
+
+  const handleSelectPokemon = (pokemon: Pokemon) => {
+    // Adiciona o parametro pokemon na URL sem recarregar a pagina
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('pokemon', pokemon.id!);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleCloseModal = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('pokemon');
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  if (!isInitialized) {
+    return <div className="w-full flex items-center justify-center p-12 text-slate-500">Carregando Pokédex...</div>;
+  }
+
   return (
     <>
+      {selectedPokemon && (
+        <PokemonModal pokemon={selectedPokemon} onClose={handleCloseModal} />
+      )}
       <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8 relative">
         <div className="relative" ref={menuRef}>
           {/* Botão de Menu Hambúrguer */}
@@ -210,7 +270,11 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {paginatedPokemons.map((pokemon) => (
-              <PokemonCard key={pokemon.id} pokemon={pokemon} />
+              <PokemonCard 
+                key={pokemon.id} 
+                pokemon={pokemon} 
+                onSelect={handleSelectPokemon}
+              />
             ))}
           </div>
           
