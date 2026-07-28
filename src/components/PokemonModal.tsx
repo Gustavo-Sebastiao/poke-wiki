@@ -16,7 +16,21 @@ interface PokeApiData {
 interface PokeApiSpecies {
   habitat: { name: string } | null;
   capture_rate: number;
+  generation: { name: string };
+  evolution_chain: { url: string } | null;
 }
+
+const GENERATION_NAMES: Record<string, string> = {
+  'generation-i': '1ª Geração',
+  'generation-ii': '2ª Geração',
+  'generation-iii': '3ª Geração',
+  'generation-iv': '4ª Geração',
+  'generation-v': '5ª Geração',
+  'generation-vi': '6ª Geração',
+  'generation-vii': '7ª Geração',
+  'generation-viii': '8ª Geração',
+  'generation-ix': '9ª Geração'
+};
 
 const TYPE_TRANSLATIONS: Record<string, string> = {
   hp: 'HP',
@@ -47,6 +61,8 @@ interface PokemonModalProps {
 export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
   const [apiData, setApiData] = useState<PokeApiData | null>(null);
   const [speciesData, setSpeciesData] = useState<PokeApiSpecies | null>(null);
+  const [evolutions, setEvolutions] = useState<{name: string, imageUrl: string}[]>([]);
+  const [megaEvolutions, setMegaEvolutions] = useState<{name: string, imageUrl: string}[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,14 +77,74 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
     const fetchApiData = async () => {
       setLoading(true);
       try {
-        const formattedName = pokemon.name.toLowerCase().replace(/\s+/g, '-');
-        const [pokemonRes, speciesRes] = await Promise.all([
-          fetch(`https://pokeapi.co/api/v2/pokemon/${formattedName}`),
-          fetch(`https://pokeapi.co/api/v2/pokemon-species/${formattedName}`)
-        ]);
+        let fetchIdentifier = pokemon.name.toLowerCase().replace(/\s+/g, '-');
+        if (pokemon.image_url) {
+          const matches = pokemon.image_url.match(/\/(\d+)\.(png|jpg|jpeg|gif)$/i);
+          if (matches && matches[1]) {
+            fetchIdentifier = matches[1];
+          }
+        }
+        
+        const pokemonRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${fetchIdentifier}`);
+        if (pokemonRes.ok) {
+          const pData = await pokemonRes.json();
+          setApiData(pData);
+          
+          if (pData.species?.url) {
+            const speciesRes = await fetch(pData.species.url);
+            if (speciesRes.ok) {
+              const sData = await speciesRes.json();
+              setSpeciesData(sData);
 
-        if (pokemonRes.ok) setApiData(await pokemonRes.json());
-        if (speciesRes.ok) setSpeciesData(await speciesRes.json());
+              if (sData.varieties) {
+                const megas = sData.varieties
+                  .filter((v: any) => v.pokemon.name.includes('-mega') || v.pokemon.name.includes('-primal'))
+                  .map((v: any) => {
+                    const url = v.pokemon.url;
+                    const matches = url.match(/\/(\d+)\/$/);
+                    const id = matches ? matches[1] : null;
+                    return {
+                      name: v.pokemon.name,
+                      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
+                    };
+                  });
+                setMegaEvolutions(megas);
+              }
+
+              if (sData.evolution_chain?.url) {
+                try {
+                  const evoRes = await fetch(sData.evolution_chain.url);
+                  if (evoRes.ok) {
+                    const evoData = await evoRes.json();
+                    const evos: { name: string, imageUrl: string }[] = [];
+                    
+                    const parseNode = (node: any) => {
+                      const speciesUrl = node.species.url;
+                      const matches = speciesUrl.match(/\/(\d+)\/$/);
+                      const id = matches ? matches[1] : null;
+                      
+                      if (id) {
+                        evos.push({
+                          name: node.species.name,
+                          imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
+                        });
+                      }
+                      
+                      if (node.evolves_to && node.evolves_to.length > 0) {
+                        node.evolves_to.forEach((child: any) => parseNode(child));
+                      }
+                    };
+                    
+                    parseNode(evoData.chain);
+                    setEvolutions(evos);
+                  }
+                } catch (e) {
+                  console.error("Erro ao buscar evoluções:", e);
+                }
+              }
+            }
+          }
+        }
       } catch (error) {
         console.error("Erro ao buscar dados adicionais na PokeAPI:", error);
       } finally {
@@ -190,6 +266,50 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
                 <p className="text-lg text-slate-600 leading-relaxed">
                   {pokemon.description}
                 </p>
+
+                {speciesData?.generation && (
+                  <div className="mt-4 mb-2">
+                    <span className="inline-block bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-semibold border border-slate-200">
+                      {GENERATION_NAMES[speciesData.generation.name] || speciesData.generation.name}
+                    </span>
+                  </div>
+                )}
+
+                {evolutions.length > 1 && (
+                  <div className="mt-4 mb-2">
+                    <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Evoluções</h4>
+                    <div className="flex flex-wrap items-center gap-3">
+                      {evolutions.map((evo, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`relative w-14 h-14 rounded-full shadow-sm border-2 flex items-center justify-center p-1 bg-white ${evo.name.toLowerCase() === pokemon.name.toLowerCase().replace(/\s+/g, '-') ? 'border-[#59F7E2] ring-2 ring-[#59F7E2]/30' : 'border-slate-200'}`}
+                          title={evo.name.charAt(0).toUpperCase() + evo.name.slice(1)}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={evo.imageUrl} alt={evo.name} className="object-contain w-full h-full drop-shadow-sm" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {megaEvolutions.length > 0 && (
+                  <div className="mt-4 mb-2">
+                    <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Mega Evoluções</h4>
+                    <div className="flex flex-wrap items-center gap-3">
+                      {megaEvolutions.map((mega, idx) => (
+                        <div 
+                          key={idx} 
+                          className="relative w-16 h-16 rounded-full shadow-sm border-2 border-slate-200 flex items-center justify-center p-1 bg-white hover:border-amber-400 hover:ring-2 hover:ring-amber-400/30 transition-all cursor-pointer"
+                          title={mega.name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={mega.imageUrl} alt={mega.name} className="object-contain w-full h-full drop-shadow-sm" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Base Stats */}

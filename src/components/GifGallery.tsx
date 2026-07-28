@@ -103,12 +103,15 @@ const GifGallery = () => {
       </div>
       <div className={styles.overlay}></div>
       
-      {/* Texto e botão flutuantes com fade up */}
-      <div className={`absolute z-30 flex flex-col items-center justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
-        <h2 className="text-5xl md:text-7xl font-black text-slate-800 tracking-tighter mb-8 uppercase text-center drop-shadow-sm">
-          Desbrave o universo<br/>Pokémon
+      {/* Texto e botão flutuantes com fade in da direita */}
+      <div className={`absolute right-[2%] md:right-[4%] lg:right-[4%] w-[90%] md:w-[40%] z-30 flex flex-col items-end justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'}`}>
+        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-white tracking-tighter mb-4 uppercase text-right drop-shadow-md leading-tight">
+          Comece sua<br/>Aventura
         </h2>
-        <button className="px-10 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-full text-lg shadow-xl transition-all hover:scale-105">
+        <p className="text-slate-600 text-base md:text-lg font-medium mb-8 max-w-md text-right">
+          Desbrave o universo Pokémon. Milhares de espécies prontas para serem descobertas. Tire suas dúvidas e conheça cada detalhe desse mundo fascinante!
+        </p>
+        <button className="px-10 py-3 bg-white text-slate-600 font-semibold rounded-full text-lg shadow-md border-2 border-teal-400 transition-all hover:scale-105 hover:bg-teal-50 flex items-center gap-2">
           Acessar a Wiki
         </button>
       </div>

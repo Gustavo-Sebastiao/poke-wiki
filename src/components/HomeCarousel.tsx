@@ -15,8 +15,8 @@ const slides = [
     subtitle: "BEM-VINDO",
     description: "A maior enciclopédia interativa de Pokémons. Explore todos os detalhes, estatísticas e descubra novas aventuras neste universo incrível!",
     bgColor: "bg-[#e7da9b]",
-    buttonColor: "bg-[#d4c57b]",
-    buttonHover: "hover:bg-[#c1b262]",
+    buttonColor: "border-[#d4c57b]",
+    buttonHover: "hover:bg-slate-50",
     image: pikachuImg.src,
     price: "INÍCIO",
     imageContainerClass: "absolute top-[25%] left-1/2 md:left-[53%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none overflow-visible",
@@ -31,8 +31,8 @@ const slides = [
     subtitle: "CHAMA",
     description: "Sopra fogo quente o suficiente para derreter pedras. Conhecido por causar incêndios florestais intencionalmente.",
     bgColor: "bg-[#ff914d]",
-    buttonColor: "bg-[#ff914d]",
-    buttonHover: "hover:bg-[#e58245]",
+    buttonColor: "border-[#ff914d]",
+    buttonHover: "hover:bg-slate-50",
     image: charizardImg.src,
     price: "#0006",
     imageContainerClass: "absolute top-1/2 left-1/2 md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none overflow-visible",
@@ -44,8 +44,8 @@ const slides = [
     subtitle: "MARÉ",
     description: "Um Pokémon brutal com jatos de água em sua carapaça. Eles são usados para ataques de alta pressão.",
     bgColor: "bg-[#38b6ff]",
-    buttonColor: "bg-[#38b6ff]",
-    buttonHover: "hover:bg-[#2fa3e5]",
+    buttonColor: "border-[#38b6ff]",
+    buttonHover: "hover:bg-slate-50",
     image: blastoiseImg.src,
     price: "#0009",
     imageContainerClass: "absolute top-1/2 left-1/2 md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none overflow-visible",
@@ -57,8 +57,8 @@ const slides = [
     subtitle: "FLORESTA",
     description: "A planta floresce quando está absorvendo energia solar. Fica em movimento para buscar a luz do sol.",
     bgColor: "bg-[#00bf63]",
-    buttonColor: "bg-[#00bf63]",
-    buttonHover: "hover:bg-[#00a857]",
+    buttonColor: "border-[#00bf63]",
+    buttonHover: "hover:bg-slate-50",
     image: venusaurImg.src,
     price: "#0003",
     imageContainerClass: "absolute top-1/2 left-1/2 md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none overflow-visible",
@@ -111,7 +111,7 @@ export default function HomeCarousel() {
           </p>
           
           <div className="flex items-center gap-6">
-            <button className={`px-8 py-3 rounded-full text-white font-bold transition-all shadow-md ${slides[current].buttonColor} ${slides[current].buttonHover}`}>
+            <button className={`px-10 py-3 bg-white text-slate-600 font-semibold rounded-full text-lg shadow-md border-2 transition-all hover:scale-105 flex items-center gap-2 ${slides[current].buttonColor} ${slides[current].buttonHover}`}>
               VER MAIS
             </button>
             <button className="text-slate-600 font-semibold hover:text-slate-900 transition-colors">
