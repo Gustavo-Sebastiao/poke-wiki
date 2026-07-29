@@ -4,8 +4,8 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.
 
 const resAll = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
 const dataAll = await resAll.json();
-const MEGA_IDS = dataAll.results
-  .filter(p => p.name.includes('-mega') || p.name.includes('primal'))
+const ALOLA_IDS = dataAll.results
+  .filter(p => p.name.includes('-alola') && !p.name.includes('-totem') && !p.name.includes('-cap'))
   .map(m => parseInt(m.url.split('/').slice(-2,-1)[0]));
 
 const typeMap = {
@@ -16,14 +16,14 @@ const typeMap = {
   dark: 'Escuridão', fairy: 'Fada'
 };
 
-async function seedMegas() {
-  console.log('Fetching existing Megas from DB...');
-  const { data: existing } = await supabase.from('pokemons').select('name').ilike('name', '%Mega%');
+async function seedAlolas() {
+  console.log('Fetching existing Alolas from DB...');
+  const { data: existing } = await supabase.from('pokemons').select('name').ilike('name', '%Alola%');
   const existingNames = new Set((existing || []).map(p => p.name));
 
-  const megas = [];
+  const alolas = [];
   
-  for (const id of MEGA_IDS) {
+  for (const id of ALOLA_IDS) {
     try {
       const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
       if (!res.ok) continue;
@@ -38,7 +38,7 @@ async function seedMegas() {
       const types = data.types.map(t => typeMap[t.type.name]).join(', ');
       const image_url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
       
-      let description = "Uma poderosa Mega Evolução.";
+      let description = "Uma forma adaptada à região de Alola.";
       if (data.species?.url) {
         const sRes = await fetch(data.species.url);
         if (sRes.ok) {
@@ -53,7 +53,7 @@ async function seedMegas() {
         }
       }
       
-      megas.push({
+      alolas.push({
         name,
         type: types,
         description,
@@ -66,14 +66,14 @@ async function seedMegas() {
     }
   }
 
-  if (megas.length > 0) {
-    console.log(`Inserting ${megas.length} Megas into Supabase...`);
-    const { data, error } = await supabase.from('pokemons').insert(megas);
+  if (alolas.length > 0) {
+    console.log(`Inserting ${alolas.length} Alolas into Supabase...`);
+    const { data, error } = await supabase.from('pokemons').insert(alolas);
     if (error) console.error(error);
-    else console.log('Successfully inserted Mega Evolutions!');
+    else console.log('Successfully inserted Alola forms!');
   } else {
-    console.log('No new Megas to insert.');
+    console.log('No new Alolas to insert.');
   }
 }
 
-seedMegas();
+seedAlolas();

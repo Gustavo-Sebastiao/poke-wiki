@@ -104,14 +104,14 @@ const GifGallery = () => {
         <Col gifs={col3} direction="up" />
         <Col gifs={col4} direction="down" />
       </div>
-      <div className={`${styles.overlay} bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(250,250,250,0.95)_75%,#fafafa_100%)] dark:bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(15,23,42,0.95)_75%,#0f172a_100%)]`}></div>
+      <div className={`${styles.overlay} hidden md:block bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(250,250,250,0.95)_75%,#fafafa_100%)] dark:bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(15,23,42,0.95)_75%,#0f172a_100%)]`}></div>
       
       {/* Texto e botão flutuantes com fade in da direita */}
-      <div className={`absolute right-[2%] md:right-[4%] lg:right-[4%] w-[90%] md:w-[40%] z-30 flex flex-col items-end justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'}`}>
-        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-slate-800 dark:text-white tracking-tighter mb-4 uppercase text-right drop-shadow-md leading-tight">
+      <div className={`absolute right-0 left-0 mx-auto md:mx-0 md:left-auto md:right-[4%] lg:right-[4%] w-[90%] md:w-[40%] z-30 flex flex-col items-center md:items-end justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'}`}>
+        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-slate-800 dark:text-white tracking-tighter mb-4 uppercase text-center md:text-right drop-shadow-md leading-tight">
           Comece sua<br/>Aventura
         </h2>
-        <p className="text-slate-600 dark:text-slate-300 text-base md:text-lg font-medium mb-8 max-w-md text-right">
+        <p className="text-base md:text-lg font-medium mb-8 max-w-md text-center md:text-right text-slate-600 dark:text-slate-300">
           Desbrave o universo Pokémon. Milhares de espécies prontas para serem descobertas. Tire suas dúvidas e conheça cada detalhe desse mundo fascinante!
         </p>
         <button className="px-10 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 font-semibold rounded-full text-lg shadow-md border-2 border-teal-400 dark:border-teal-500 transition-all hover:scale-105 hover:bg-teal-50 dark:hover:bg-teal-900/30 flex items-center gap-2">

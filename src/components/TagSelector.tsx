@@ -103,8 +103,7 @@ export default function TagSelector({ options, selectedTags, onChange, limit }: 
                 <Image 
                   src={tagImages[tag]} 
                   alt={tag} 
-                  fill
-                  className={`object-cover drop-shadow-sm ${extraStyle}`}
+                  fill sizes="(max-width: 768px) 100vw, 33vw" className={`object-cover drop-shadow-sm ${extraStyle}`}
                 />
               </div>
             ) : (

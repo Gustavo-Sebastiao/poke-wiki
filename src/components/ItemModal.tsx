@@ -53,8 +53,7 @@ export default function ItemModal({ item, onClose }: ItemModalProps) {
             <Image
               src={item.image_url}
               alt={item.name}
-              fill
-              className="object-contain filter drop-shadow-xl z-10"
+              fill sizes="(max-width: 768px) 100vw, 33vw" className="object-contain filter drop-shadow-xl z-10"
               unoptimized
             />
           </div>

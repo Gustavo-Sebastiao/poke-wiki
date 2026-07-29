@@ -56,7 +56,7 @@ export default function PokemonCard({
             if (!img) return null;
             return (
               <div key={i} className="relative w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center overflow-hidden" title={tag}>
-                <Image src={img} alt={tag} fill className="object-cover scale-110 drop-shadow-sm" />
+                <Image src={img} alt={tag} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover scale-110 drop-shadow-sm" />
               </div>
             );
           })}

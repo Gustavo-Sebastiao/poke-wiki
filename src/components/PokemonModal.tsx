@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X } from 'lucide-react';
+import { X, Star } from 'lucide-react';
 import { tagImages } from '@/components/TagSelector';
 import { Pokemon } from '@/lib/pokemonService';
 
@@ -61,6 +61,7 @@ interface PokemonModalProps {
 export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
   const [apiData, setApiData] = useState<PokeApiData | null>(null);
   const [speciesData, setSpeciesData] = useState<PokeApiSpecies | null>(null);
+  const [isShiny, setIsShiny] = useState(false);
   const [evolutions, setEvolutions] = useState<{name: string, imageUrl: string}[]>([]);
   const [megaEvolutions, setMegaEvolutions] = useState<{name: string, imageUrl: string}[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,26 +117,61 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
                   const evoRes = await fetch(sData.evolution_chain.url);
                   if (evoRes.ok) {
                     const evoData = await evoRes.json();
-                    const evos: { name: string, imageUrl: string }[] = [];
+                    const chain = evoData.chain;
                     
-                    const parseNode = (node: any) => {
-                      const speciesUrl = node.species.url;
-                      const matches = speciesUrl.match(/\/(\d+)\/$/);
-                      const id = matches ? matches[1] : null;
-                      
-                      if (id) {
-                        evos.push({
-                          name: node.species.name,
-                          imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
-                        });
+                    const pName = pokemon.name.toLowerCase().replace(/\s+/g, '-');
+                    const sName = sData.name.toLowerCase();
+
+                    function buildPaths(node: any, currentPath: string[]): string[][] {
+                      if (!node.evolves_to || node.evolves_to.length === 0) {
+                        return [currentPath];
                       }
-                      
-                      if (node.evolves_to && node.evolves_to.length > 0) {
-                        node.evolves_to.forEach((child: any) => parseNode(child));
+                      let paths: string[][] = [];
+                      for (const child of node.evolves_to) {
+                        const details = child.evolution_details.length > 0 ? child.evolution_details : [{}];
+                        for (const detail of details) {
+                          const baseForm = detail.base_form?.name || node.species.name;
+                          const evolvedForm = detail.evolved_form?.name || child.species.name;
+                          
+                          const newPath = [...currentPath];
+                          newPath[newPath.length - 1] = baseForm;
+                          newPath.push(evolvedForm);
+                          
+                          paths.push(...buildPaths(child, newPath));
+                        }
                       }
-                    };
+                      return paths;
+                    }
+
+                    const allPaths = buildPaths(chain, [chain.species.name]);
+                    let matchingPaths = allPaths.filter((p: string[]) => p.includes(pName));
                     
-                    parseNode(evoData.chain);
+                    if (matchingPaths.length === 0) {
+                      matchingPaths = allPaths.filter((p: string[]) => p.includes(sName));
+                      matchingPaths = matchingPaths.map((p: string[]) => p.map((f: string) => f === sName ? pName : f));
+                    }
+
+                    const finalSet = new Set();
+                    for (const p of matchingPaths) {
+                      for (const f of p) {
+                        finalSet.add(f);
+                      }
+                    }
+
+                    const evos = [];
+                    for (const form of Array.from(finalSet)) {
+                      try {
+                        const pRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${form}`);
+                        if (pRes.ok) {
+                          const pData = await pRes.json();
+                          evos.push({
+                            name: pData.name.replace(/-/g, ' '),
+                            imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pData.id}.png`
+                          });
+                        }
+                      } catch(e) {}
+                    }
+
                     setEvolutions(evos);
                   }
                 } catch (e) {
@@ -155,7 +191,8 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
     fetchApiData();
   }, [pokemon.name]);
 
-  const imageUrl = pokemon.image_url || 'https://via.placeholder.com/400?text=Sem+Imagem';
+  const baseImageUrl = pokemon.image_url || 'https://via.placeholder.com/400?text=Sem+Imagem';
+  const imageUrl = isShiny ? baseImageUrl.replace('official-artwork/', 'official-artwork/shiny/') : baseImageUrl;
   
   const heightMeters = apiData ? (apiData.height / 10).toFixed(1) + ' m' : (loading ? '...' : 'Desconhecida');
   const weightKg = apiData ? (apiData.weight / 10).toFixed(1) + ' kg' : (loading ? '...' : 'Desconhecido');
@@ -191,6 +228,15 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
             {/* Lado Esquerdo: Imagem e Informações Secundárias */}
             <div className="w-full lg:w-1/2 flex flex-col gap-8 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] p-8 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-tr from-[#59F7E2]/20 dark:from-[#59F7E2]/10 to-transparent opacity-50 pointer-events-none"></div>
+              
+              {/* Botão Shiny */}
+              <button 
+                onClick={() => setIsShiny(!isShiny)}
+                className={`absolute top-6 left-6 z-20 p-2 transition-transform hover:scale-110 ${isShiny ? 'text-yellow-400 drop-shadow-md' : 'text-slate-400 dark:text-slate-500 hover:text-yellow-400'}`}
+                title="Alternar Versão Shiny"
+              >
+                <Star className="w-8 h-8" />
+              </button>
               
               <div className="relative w-full aspect-square flex items-center justify-center transition-transform duration-700 group-hover:scale-105 z-10">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
