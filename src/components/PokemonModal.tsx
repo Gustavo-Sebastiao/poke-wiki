@@ -148,7 +148,11 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
                     
                     if (matchingPaths.length === 0) {
                       matchingPaths = allPaths.filter((p: string[]) => p.includes(sName));
-                      matchingPaths = matchingPaths.map((p: string[]) => p.map((f: string) => f === sName ? pName : f));
+                      
+                      const isMegaOrPrimal = pokemon.name.toLowerCase().includes('mega') || pokemon.name.toLowerCase().includes('primal');
+                      if (!isMegaOrPrimal) {
+                        matchingPaths = matchingPaths.map((p: string[]) => p.map((f: string) => f === sName ? pName : f));
+                      }
                     }
 
                     const finalSet = new Set();
