@@ -1,9 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Search, ChevronLeft, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import type { Item } from '@/lib/itemService';
+import ItemModal from './ItemModal';
 
 interface ItemsListProps {
   initialItems: Item[];
@@ -11,9 +13,66 @@ interface ItemsListProps {
 
 const ITEMS_PER_PAGE = 50;
 
+const RARITIES = ['Comum', 'Incomum', 'Raro', 'Épico', 'Único'];
+const CATEGORIES = ['Pokébolas', 'Medicina', 'Batalha', 'Evolução', 'Comida', 'Chaves e Especiais', 'Outros'];
+
 export default function ItemsList({ initialItems }: ItemsListProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
+  const selectedItemId = searchParams.get('item');
+  const selectedItem = useMemo(() => {
+    if (!selectedItemId) return null;
+    return initialItems.find(i => i.id.toString() === selectedItemId) || null;
+  }, [selectedItemId, initialItems]);
+
+  const handleSelectItem = (item: Item) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('item', item.id.toString());
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleCloseModal = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('item');
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [selectedRarities, setSelectedRarities] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleRarity = (rarity: string) => {
+    setSelectedRarities(prev => 
+      prev.includes(rarity) ? prev.filter(r => r !== rarity) : [...prev, rarity]
+    );
+    setCurrentPage(1);
+  };
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    );
+    setCurrentPage(1);
+  };
 
   const filteredItems = useMemo(() => {
     let items = initialItems;
@@ -26,8 +85,16 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
       );
     }
 
+    if (selectedRarities.length > 0) {
+      items = items.filter(item => selectedRarities.includes(item.rarity));
+    }
+
+    if (selectedCategories.length > 0) {
+      items = items.filter(item => selectedCategories.includes(item.category));
+    }
+
     return items;
-  }, [initialItems, searchTerm]);
+  }, [initialItems, searchTerm, selectedRarities, selectedCategories]);
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE) || 1;
   
@@ -43,8 +110,12 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
 
   return (
     <>
-      {/* Search Bar */}
-      <div className="sticky top-4 z-40 flex gap-3 mb-6 relative items-stretch max-w-2xl mx-auto md:mr-0 w-full">
+      {selectedItem && (
+        <ItemModal item={selectedItem} onClose={handleCloseModal} />
+      )}
+
+      {/* Search Bar & Mobile Filters Button */}
+      <div className="sticky top-4 z-40 flex gap-3 mb-6 relative items-stretch max-w-2xl mx-auto md:mr-0">
         <div className="relative flex-1">
           <input 
             type="text" 
@@ -55,99 +126,286 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
           />
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-800 dark:text-slate-100 w-6 h-6 pointer-events-none" />
         </div>
+
+        <button 
+          onClick={() => setShowMobileFilters(true)}
+          className="md:hidden shrink-0 w-[60px] bg-white dark:bg-slate-800 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-all"
+          title="Filtros"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
       </div>
 
-      {/* Título de Resultados */}
-      <div className="flex justify-between items-end mb-6 border-b border-slate-100 dark:border-slate-800 pb-2">
-        <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">Itens</h2>
-        <span className="text-slate-400 dark:text-slate-500 font-medium">{filteredItems.length} resultados</span>
-      </div>
-
-      {/* Grid de Itens */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-        {paginatedItems.map((item) => (
-          <div 
-            key={item.id} 
-            className="group relative flex flex-col items-center justify-center bg-white dark:bg-slate-800 rounded-2xl p-6 border-2 border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-[#59F7E2] dark:hover:border-[#59F7E2] transition-all duration-300"
+      {/* Desktop Filters Bar */}
+      <div className="hidden md:flex flex-row flex-wrap items-center gap-3 mb-8 relative" ref={menuRef}>
+        {/* Dropdown Categoria */}
+        <div className="relative w-full md:w-auto">
+          <button 
+            onClick={() => setOpenDropdown(openDropdown === 'category' ? null : 'category')}
+            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'category' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
           >
-            <div className="relative w-16 h-16 md:w-20 md:h-20 mb-4 transition-transform group-hover:scale-110">
-              <Image
-                src={item.image_url}
-                alt={item.name}
-                fill
-                sizes="(max-width: 768px) 64px, 80px"
-                className="object-contain filter drop-shadow-md"
-                unoptimized
-              />
+            {selectedCategories.length > 0 ? `${selectedCategories.length} categorias` : 'Todas as categorias'}
+            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'category' ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {openDropdown === 'category' && (
+            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[300px]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Categoria</h3>
+              <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                {CATEGORIES.map(category => (
+                  <label key={category} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedCategories.includes(category)}
+                      onChange={() => toggleCategory(category)}
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
+                    />
+                    <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 transition-colors font-medium text-sm">
+                      {category}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
-            
-            <div className="text-center w-full">
-              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-1">Nº {item.id.toString().padStart(3, '0')}</p>
-              <h3 className="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100 capitalize truncate w-full">
-                {item.name}
-              </h3>
+          )}
+        </div>
+
+        {/* Dropdown Raridade */}
+        <div className="relative w-full md:w-auto">
+          <button 
+            onClick={() => setOpenDropdown(openDropdown === 'rarity' ? null : 'rarity')}
+            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'rarity' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+          >
+            {selectedRarities.length > 0 ? `${selectedRarities.length} selecionadas` : 'Qualquer raridade'}
+            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'rarity' ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {openDropdown === 'rarity' && (
+            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[240px]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Raridade</h3>
+              <div className="flex flex-col gap-2">
+                {RARITIES.map(rarity => (
+                  <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedRarities.includes(rarity)}
+                      onChange={() => toggleRarity(rarity)}
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
+                    />
+                    <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 transition-colors font-medium text-sm">
+                      {rarity}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-        {paginatedItems.length === 0 && (
-          <div className="col-span-full py-20 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center">
-            <Search className="w-12 h-12 mb-4 opacity-20" />
-            <p className="text-xl font-medium">Nenhum item encontrado.</p>
-            <p className="text-sm mt-2">Tente buscar com outros termos.</p>
-          </div>
+          )}
+        </div>
+
+        {/* Botão Limpar Filtros */}
+        {(selectedCategories.length > 0 || selectedRarities.length > 0) && (
+          <button 
+            onClick={() => { setSelectedCategories([]); setSelectedRarities([]); setCurrentPage(1); }}
+            className="px-4 py-2 text-sm font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors ml-auto md:ml-0"
+          >
+            Limpar Filtros
+          </button>
         )}
       </div>
 
-      {/* Paginação Básica */}
-      {totalPages > 1 && (
-        <div className="mt-12 flex justify-center items-center gap-2">
-          <button 
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium transition-colors"
-          >
-            Anterior
-          </button>
+      {/* Mobile Filters Modal */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/40 backdrop-blur-sm md:hidden animate-fade-in">
+          <div className="absolute inset-0" onClick={() => setShowMobileFilters(false)}></div>
           
-          <div className="flex gap-1 overflow-x-auto max-w-xs px-2 py-1 scrollbar-hide">
-            {Array.from({ length: totalPages }).map((_, i) => {
-              const page = i + 1;
-              // Mostrar primeira, última, atual e vizinhas
-              if (
-                page === 1 || 
-                page === totalPages || 
-                (page >= currentPage - 1 && page <= currentPage + 1)
-              ) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`w-10 h-10 shrink-0 rounded-xl font-bold transition-colors ${
-                      currentPage === page 
-                        ? 'bg-[#59F7E2] text-slate-800' 
-                        : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              } else if (
-                page === currentPage - 2 || 
-                page === currentPage + 2
-              ) {
-                return <span key={page} className="px-2 py-2 text-slate-400">...</span>;
-              }
-              return null;
-            })}
-          </div>
+          <div className="relative mt-auto h-[85vh] bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl flex flex-col animate-slide-up">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Filtros</h2>
+              <button 
+                onClick={() => setShowMobileFilters(false)}
+                className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-5 pb-32 flex flex-col gap-8 custom-scrollbar">
+              {/* Categoria */}
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Categoria</h3>
+                <div className="flex flex-col gap-3">
+                  {CATEGORIES.map(category => (
+                    <label key={category} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedCategories.includes(category)}
+                        onChange={() => toggleCategory(category)}
+                        className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
+                      />
+                      <span className="text-slate-700 dark:text-slate-200 font-medium text-base">
+                        {category}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
-          <button 
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium transition-colors"
-          >
-            Próxima
-          </button>
+              {/* Raridade */}
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Raridade</h3>
+                <div className="flex flex-col gap-3">
+                  {RARITIES.map(rarity => (
+                    <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedRarities.includes(rarity)}
+                        onChange={() => toggleRarity(rarity)}
+                        className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
+                      />
+                      <span className="text-slate-700 dark:text-slate-200 font-medium text-base">
+                        {rarity}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer Buttons */}
+            <div className="flex-none p-5 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)] flex gap-4 mt-auto">
+               {(selectedCategories.length > 0 || selectedRarities.length > 0) && (
+                  <button 
+                    onClick={() => { setSelectedCategories([]); setSelectedRarities([]); setCurrentPage(1); }}
+                    className="flex-[0.8] py-4 border-2 border-red-400 text-red-500 rounded-2xl font-bold transition-all hover:bg-red-50 active:scale-95 text-lg"
+                  >
+                    Limpar
+                  </button>
+               )}
+               <button 
+                 onClick={() => setShowMobileFilters(false)} 
+                 className="flex-[1.2] py-4 bg-[#59F7E2] hover:bg-[#4de0cc] text-slate-900 rounded-2xl font-bold shadow-md transition-all active:scale-95 text-lg"
+               >
+                 Ver Resultados
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Grid de Itens */}
+      {paginatedItems.length > 0 ? (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {paginatedItems.map((item) => (
+              <div 
+                key={item.id} 
+                onClick={() => handleSelectItem(item)}
+                className="group relative flex flex-col items-center justify-start bg-white dark:bg-slate-800 rounded-[2rem] p-6 border-2 border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-[#59F7E2] dark:hover:border-[#59F7E2] transition-all duration-300 cursor-pointer h-full"
+              >
+                {/* Rarity Badge */}
+                <div className={`absolute top-4 left-4 px-2 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase shadow-sm opacity-80 group-hover:opacity-100 transition-opacity
+                  ${item.rarity === 'Único' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                    item.rarity === 'Épico' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                    item.rarity === 'Raro' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                    item.rarity === 'Incomum' ? 'bg-green-100 text-green-700 border border-green-200' :
+                    'bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-700 dark:text-slate-300'
+                  }
+                `}>
+                  {item.rarity}
+                </div>
+
+                <div className="relative w-16 h-16 md:w-20 md:h-20 mt-4 mb-4 transition-transform group-hover:scale-110 shrink-0">
+                  <Image
+                    src={item.image_url}
+                    alt={item.name}
+                    fill
+                    sizes="(max-width: 768px) 64px, 80px"
+                    className="object-contain filter drop-shadow-md"
+                    unoptimized
+                  />
+                </div>
+                
+                <div className="text-center w-full flex flex-col flex-1">
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-1">{item.category}</p>
+                  <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 capitalize mb-3 line-clamp-1">
+                    {item.name}
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3 italic flex-1">
+                    "{item.description}"
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-12">
+              <button
+                onClick={() => {
+                  setCurrentPage(p => Math.max(1, p - 1));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                disabled={currentPage === 1}
+                className="p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <div className="flex gap-1 overflow-x-auto max-w-xs px-2 py-1 scrollbar-hide">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const page = i + 1;
+                  if (
+                    page === 1 || 
+                    page === totalPages || 
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => {
+                          setCurrentPage(page);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className={`w-10 h-10 flex items-center justify-center shrink-0 transition-all font-bold ${
+                          currentPage === page 
+                            ? 'text-slate-900 dark:text-white text-xl scale-110' 
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 2 || 
+                    page === currentPage + 2
+                  ) {
+                    return <span key={page} className="px-2 py-2 text-slate-400">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button 
+                onClick={() => {
+                  setCurrentPage(p => Math.min(totalPages, p + 1));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                disabled={currentPage === totalPages}
+                className="p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="text-center py-20">
+          <div className="text-slate-400 dark:text-slate-600 mb-4">
+            <Search className="w-16 h-16 mx-auto opacity-50" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">Nenhum item encontrado</h3>
+          <p className="text-slate-500 dark:text-slate-400">Tente buscar por outro termo ou remova os filtros.</p>
         </div>
       )}
     </>

@@ -1,4 +1,5 @@
 import NavMenu from './NavMenu';
+import GlobalSearch from './GlobalSearch';
 
 export default function Header() {
   return (
@@ -15,7 +16,8 @@ export default function Header() {
         </div>
         
         {/* Lado Direito */}
-        <div className="flex-1 flex justify-end">
+        <div className="flex-1 flex justify-end items-center">
+          <GlobalSearch />
         </div>
       </div>
     </header>

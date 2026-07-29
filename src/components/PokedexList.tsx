@@ -297,7 +297,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
 
         <button 
           onClick={() => setShowMobileFilters(true)}
-          className="md:hidden shrink-0 w-[60px] bg-teal-50/95 backdrop-blur-md border-2 border-[#59F7E2] rounded-full shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-all"
+          className="md:hidden shrink-0 w-[60px] bg-white dark:bg-slate-800 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-all"
           title="Filtros"
         >
           <Menu className="w-6 h-6" />
@@ -597,9 +597,39 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
                 <ChevronLeft className="w-5 h-5" />
               </button>
               
-              <span className="text-slate-600 dark:text-slate-300 font-medium px-4">
-                Página {currentPage} de {totalPages}
-              </span>
+              <div className="flex gap-1 overflow-x-auto max-w-xs px-2 py-1 scrollbar-hide">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const page = i + 1;
+                  if (
+                    page === 1 || 
+                    page === totalPages || 
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => {
+                          setCurrentPage(page);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className={`w-10 h-10 flex items-center justify-center shrink-0 transition-all font-bold ${
+                          currentPage === page 
+                            ? 'text-slate-900 dark:text-white text-xl scale-110' 
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 2 || 
+                    page === currentPage + 2
+                  ) {
+                    return <span key={page} className="px-2 py-2 text-slate-400 flex items-center justify-center">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
               
               <button
                 onClick={() => {
