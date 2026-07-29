@@ -116,7 +116,6 @@ export default function GlobalSearch() {
                       src={result.image_url} 
                       alt={result.name}
                       fill sizes="(max-width: 768px) 100vw, 33vw"
-                      sizes="48px"
                       className="object-contain filter drop-shadow-sm group-hover:scale-110 transition-transform"
                       unoptimized
                     />
@@ -188,7 +187,6 @@ export default function GlobalSearch() {
                           src={result.image_url} 
                           alt={result.name}
                           fill sizes="(max-width: 768px) 100vw, 33vw"
-                          sizes="64px"
                           className="object-contain"
                           unoptimized
                         />

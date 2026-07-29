@@ -319,7 +319,6 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
                     src={item.image_url}
                     alt={item.name}
                     fill sizes="(max-width: 768px) 100vw, 33vw"
-                    sizes="(max-width: 768px) 64px, 80px"
                     className="object-contain filter drop-shadow-md"
                     unoptimized
                   />
