@@ -4,9 +4,13 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, UserCircle, Plus, Users, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translations } from '@/lib/translations';
 
 export default function AdminToggle() {
   const { user, role, loading, signOut } = useAuth();
+  const { language } = useLanguage();
+  const t = translations[language].adminMenu;
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +56,7 @@ export default function AdminToggle() {
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
               >
                 <UserCircle className="w-4 h-4" />
-                Meu Painel
+                {t.dashboard}
               </Link>
               
               {(role === 'admin' || role === 'superadmin') && (
@@ -62,7 +66,7 @@ export default function AdminToggle() {
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  Adicionar Pokémons
+                  {t.addPokemon}
                 </Link>
               )}
 
@@ -73,7 +77,7 @@ export default function AdminToggle() {
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
                 >
                   <Users className="w-4 h-4" />
-                  Adicionar Admins
+                  {t.addAdmin}
                 </Link>
               )}
               
@@ -87,7 +91,7 @@ export default function AdminToggle() {
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors w-full text-left"
               >
                 <LogOut className="w-4 h-4" />
-                Sair
+                {t.logout}
               </button>
             </div>
           </div>

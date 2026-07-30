@@ -6,6 +6,8 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import type { Item } from '@/lib/itemService';
 import ItemModal from './ItemModal';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translations } from '@/lib/translations';
 
 interface ItemsListProps {
   initialItems: Item[];
@@ -20,6 +22,10 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const { language } = useLanguage();
+  const t = translations[language].filters;
+  const tRarity = translations[language].rarities as any;
+  const tCategory = translations[language].itemCategories as any;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -119,7 +125,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
         <div className="relative flex-1">
           <input 
             type="text" 
-            placeholder="Procurar item"
+            placeholder={t.searchItem}
             value={searchTerm}
             onChange={handleSearch}
             className="w-full px-2 pr-12 py-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b-2 border-slate-800 rounded-none text-slate-800 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#59F7E2] transition-all text-xl font-medium h-full"
@@ -144,13 +150,13 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
             onClick={() => setOpenDropdown(openDropdown === 'category' ? null : 'category')}
             className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'category' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
           >
-            {selectedCategories.length > 0 ? `${selectedCategories.length} categorias` : 'Todas as categorias'}
+            {selectedCategories.length > 0 ? `${selectedCategories.length} ${t.categories}` : t.allCategories}
             <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'category' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'category' && (
             <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[300px]">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Categoria</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">{t.category}</h3>
               <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {CATEGORIES.map(category => (
                   <label key={category} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -161,7 +167,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
                       className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
                     />
                     <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 transition-colors font-medium text-sm">
-                      {category}
+                      {tCategory[category] || category}
                     </span>
                   </label>
                 ))}
@@ -176,13 +182,13 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
             onClick={() => setOpenDropdown(openDropdown === 'rarity' ? null : 'rarity')}
             className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'rarity' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
           >
-            {selectedRarities.length > 0 ? `${selectedRarities.length} selecionadas` : 'Qualquer raridade'}
+            {selectedRarities.length > 0 ? `${selectedRarities.length} ${t.selected}` : t.anyRarity}
             <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'rarity' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'rarity' && (
             <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[240px]">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">Raridade</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">{t.rarity}</h3>
               <div className="flex flex-col gap-2">
                 {RARITIES.map(rarity => (
                   <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -193,7 +199,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
                       className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
                     />
                     <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 transition-colors font-medium text-sm">
-                      {rarity}
+                      {tRarity[rarity] || rarity}
                     </span>
                   </label>
                 ))}
@@ -208,7 +214,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
             onClick={() => { setSelectedCategories([]); setSelectedRarities([]); setCurrentPage(1); }}
             className="px-4 py-2 text-sm font-bold text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors ml-auto md:ml-0"
           >
-            Limpar Filtros
+            {t.clearFilters}
           </button>
         )}
       </div>
@@ -232,7 +238,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
             <div className="flex-1 overflow-y-auto p-5 pb-32 flex flex-col gap-8 custom-scrollbar">
               {/* Categoria */}
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Categoria</h3>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.category}</h3>
                 <div className="flex flex-col gap-3">
                   {CATEGORIES.map(category => (
                     <label key={category} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700">
@@ -243,7 +249,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
                         className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
                       />
                       <span className="text-slate-700 dark:text-slate-200 font-medium text-base">
-                        {category}
+                        {tCategory[category] || category}
                       </span>
                     </label>
                   ))}
@@ -252,7 +258,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
 
               {/* Raridade */}
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">Raridade</h3>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.rarity}</h3>
                 <div className="flex flex-col gap-3">
                   {RARITIES.map(rarity => (
                     <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700">
@@ -263,7 +269,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
                         className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
                       />
                       <span className="text-slate-700 dark:text-slate-200 font-medium text-base">
-                        {rarity}
+                        {tRarity[rarity] || rarity}
                       </span>
                     </label>
                   ))}
@@ -278,14 +284,14 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
                     onClick={() => { setSelectedCategories([]); setSelectedRarities([]); setCurrentPage(1); }}
                     className="flex-[0.8] py-4 border-2 border-red-400 text-red-500 rounded-2xl font-bold transition-all hover:bg-red-50 active:scale-95 text-lg"
                   >
-                    Limpar
+                    {t.clear}
                   </button>
                )}
                <button 
                  onClick={() => setShowMobileFilters(false)} 
                  className="flex-[1.2] py-4 bg-[#59F7E2] hover:bg-[#4de0cc] text-slate-900 rounded-2xl font-bold shadow-md transition-all active:scale-95 text-lg"
                >
-                 Ver Resultados
+                 {t.seeResults}
                </button>
             </div>
           </div>
@@ -311,7 +317,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
                     'bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-700 dark:text-slate-300'
                   }
                 `}>
-                  {item.rarity}
+                  {tRarity[item.rarity] || item.rarity}
                 </div>
 
                 <div className="relative w-16 h-16 md:w-20 md:h-20 mt-4 mb-4 transition-transform group-hover:scale-110 shrink-0">
@@ -325,7 +331,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
                 </div>
                 
                 <div className="text-center w-full flex flex-col flex-1">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-1">{item.category}</p>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-1">{tCategory[item.category] || item.category}</p>
                   <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 capitalize mb-3 line-clamp-1">
                     {item.name}
                   </h3>
@@ -403,8 +409,8 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
           <div className="text-slate-400 dark:text-slate-600 mb-4">
             <Search className="w-16 h-16 mx-auto opacity-50" />
           </div>
-          <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">Nenhum item encontrado</h3>
-          <p className="text-slate-500 dark:text-slate-400">Tente buscar por outro termo ou remova os filtros.</p>
+          <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">{t.noItem}</h3>
+          <p className="text-slate-500 dark:text-slate-400">{t.tryAnother}</p>
         </div>
       )}
     </>

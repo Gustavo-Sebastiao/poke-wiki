@@ -19,6 +19,12 @@
   justify-content: center;
 }
 
+.spreadWrapper {
+  width: 110%;
+  left: -5%;
+  justify-content: space-evenly;
+}
+
 .column {
   display: flex;
   flex-direction: column;

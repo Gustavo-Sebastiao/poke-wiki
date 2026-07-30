@@ -10,14 +10,21 @@ import AdminToggle from './AdminToggle';
 import pokebolaCompleta from "@/assets/icons/pokebola_completa-removebg-preview.png";
 import pokebolaMetade1 from "@/assets/icons/pokebola_metade_1_-removebg-preview.png";
 import pokebolaMetade2 from "@/assets/icons/pokebola_metade_2_-removebg-preview.png";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
-const navItems = [
-  { name: "Início", path: "/" },
-  { name: "Pokédex", path: "/pokedex" },
-  { name: "Itens", path: "/itens" },
-];
+const getNavItems = (lang: 'pt' | 'en') => {
+  const t = translations[lang].menu;
+  return [
+    { name: t.home, path: "/" },
+    { name: t.pokedex, path: "/pokedex" },
+    { name: t.items, path: "/itens" },
+  ];
+};
 
 export default function NavMenu() {
+  const { language } = useLanguage();
+  const navItems = getNavItems(language);
   const [isOpen, setIsOpen] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);

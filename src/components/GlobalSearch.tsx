@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translations } from '@/lib/translations';
 
 interface SearchResult {
   id: number;
@@ -20,6 +22,8 @@ export default function GlobalSearch() {
   const [showMobileOverlay, setShowMobileOverlay] = useState(false);
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
+  const { language } = useLanguage();
+  const t = translations[language].filters;
 
   // Fecha o dropdown quando clica fora
   useEffect(() => {
@@ -84,7 +88,7 @@ export default function GlobalSearch() {
         <div className="relative group hidden md:block">
           <input 
             type="text"
-            placeholder="Procurar"
+            placeholder={t.search}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => { if (results.length > 0) setIsOpen(true); }}
@@ -134,7 +138,7 @@ export default function GlobalSearch() {
         {/* Sem resultados Desktop */}
         {isOpen && query.length >= 2 && results.length === 0 && !isSearching && !showMobileOverlay && (
           <div className="absolute top-full mt-1 right-0 w-full bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 p-4 z-50 animate-fade-in-down text-center rounded-none hidden md:block">
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Nenhum resultado encontrado.</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">{t.noResults}</p>
           </div>
         )}
       </div>
@@ -157,7 +161,7 @@ export default function GlobalSearch() {
               <input 
                 autoFocus
                 type="text" 
-                placeholder="Procurar Pokémon ou Item..."
+                placeholder={t.searchGlobal}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-lg font-bold text-slate-800 dark:text-slate-100 placeholder-slate-400 text-center"
@@ -200,13 +204,13 @@ export default function GlobalSearch() {
               ) : !isSearching ? (
                 <div className="flex flex-col items-center justify-center pt-20 opacity-50">
                   <Search className="w-12 h-12 text-slate-400 mb-4" />
-                  <p className="text-slate-500 font-medium text-center">Nenhum resultado para "{query}"</p>
+                  <p className="text-slate-500 font-medium text-center">{t.noResultsQuery} "{query}"</p>
                 </div>
               ) : null
             ) : (
               <div className="flex flex-col items-center justify-center pt-20 opacity-30">
                 <Search className="w-16 h-16 text-slate-400 mb-4" />
-                <p className="text-slate-500 font-medium text-center px-8">Digite pelo menos 2 caracteres para começar a buscar</p>
+                <p className="text-slate-500 font-medium text-center px-8">{t.typeMore}</p>
               </div>
             )}
           </div>

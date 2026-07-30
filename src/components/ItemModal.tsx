@@ -3,6 +3,9 @@ import { X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import type { Item, ItemDetails } from '@/lib/itemService';
 import { getItemDetails } from '@/lib/itemService';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translations } from '@/lib/translations';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
 interface ItemModalProps {
   item: Item;
@@ -10,8 +13,14 @@ interface ItemModalProps {
 }
 
 export default function ItemModal({ item, onClose }: ItemModalProps) {
+  const { language } = useLanguage();
+  const t = translations[language].itemModal;
+  const tCategory = translations[language].itemCategories as any;
   const [details, setDetails] = useState<ItemDetails | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { translatedText: translatedDesc, loading: loadingDesc } = useDynamicTranslation(item.description);
+  const { translatedText: translatedEffect, loading: loadingEffect } = useDynamicTranslation(details?.effect || '');
 
   useEffect(() => {
     // Bloquear scroll do body ao abrir
@@ -59,16 +68,20 @@ export default function ItemModal({ item, onClose }: ItemModalProps) {
           </div>
           
           <p className="text-sm font-black text-slate-400 dark:text-slate-500 mb-1 tracking-widest">
-            ITEM Nº {item.id.toString().padStart(3, '0')}
+            {t.itemNo} {item.id.toString().padStart(3, '0')}
           </p>
           <h2 className="text-3xl font-black text-slate-800 dark:text-white capitalize mb-4 text-center">
             {item.name}
           </h2>
           
           <div className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-6 border border-slate-100 dark:border-slate-700/50">
-            <p className="text-slate-600 dark:text-slate-300 text-center italic text-sm md:text-base">
-              "{item.description}"
-            </p>
+            {loadingDesc ? (
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full animate-pulse my-1"></div>
+            ) : (
+              <p className="text-slate-600 dark:text-slate-300 text-center italic text-sm md:text-base">
+                "{translatedDesc}"
+              </p>
+            )}
           </div>
         </div>
 
@@ -76,19 +89,19 @@ export default function ItemModal({ item, onClose }: ItemModalProps) {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="w-8 h-8 text-[#59F7E2] animate-spin mb-4" />
-              <p className="text-slate-500 dark:text-slate-400 text-sm">Buscando detalhes...</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">{t.loading}</p>
             </div>
           ) : details ? (
             <div className="space-y-6 animate-fade-in-down">
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-1">Categoria</p>
-                  <p className="text-slate-700 dark:text-slate-200 font-semibold capitalize truncate">{details.category}</p>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-1">{t.category}</p>
+                  <p className="text-slate-700 dark:text-slate-200 font-semibold capitalize truncate">{tCategory[details.category] || details.category}</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-1">Custo</p>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-1">{t.cost}</p>
                   <p className="text-slate-700 dark:text-slate-200 font-semibold">
-                    {details.cost > 0 ? `₽ ${details.cost}` : 'Não comprável'}
+                    {details.cost > 0 ? `₽ ${details.cost}` : t.unbuyable}
                   </p>
                 </div>
               </div>
@@ -96,16 +109,23 @@ export default function ItemModal({ item, onClose }: ItemModalProps) {
               <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-700">
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[#59F7E2]"></div>
-                  Efeito Detalhado
+                  {t.detailedEffect}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                  {details.effect}
-                </p>
+                {loadingEffect ? (
+                  <div className="space-y-2">
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full animate-pulse"></div>
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6 animate-pulse"></div>
+                  </div>
+                ) : (
+                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                    {translatedEffect}
+                  </p>
+                )}
               </div>
             </div>
           ) : (
             <div className="py-8 text-center text-slate-500 dark:text-slate-400">
-              <p>Não foi possível carregar os detalhes do item.</p>
+              <p>{t.error}</p>
             </div>
           )}
         </div>

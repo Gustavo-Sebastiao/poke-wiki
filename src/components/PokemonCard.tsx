@@ -8,6 +8,10 @@ import { Edit2, Trash2 } from 'lucide-react';
 import { Pokemon, deletePokemon } from '@/lib/pokemonService';
 import { useAuth } from '@/contexts/AuthContext';
 import { tagImages } from '@/components/TagSelector';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatPokemonName } from '@/lib/formatters';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+import { translations } from '@/lib/translations';
 
 export default function PokemonCard({ 
   pokemon, 
@@ -19,7 +23,11 @@ export default function PokemonCard({
   const { role } = useAuth();
   const isAdmin = role === 'admin' || role === 'superadmin';
   const router = useRouter();
+  const { language } = useLanguage();
+  const tTypes = translations[language].pokemonTypes as any;
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  const { translatedText: translatedDescription, loading: isTranslating } = useDynamicTranslation(pokemon.description || '');
 
   // Placeholder caso não tenha imagem
   const imageUrl = pokemon.image_url || 'https://via.placeholder.com/150?text=Sem+Imagem';
@@ -53,9 +61,8 @@ export default function PokemonCard({
           {pokemon.type.split(',').map((t, i) => {
             const tag = t.trim();
             const img = tagImages[tag];
-            if (!img) return null;
             return (
-              <div key={i} className="relative w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center overflow-hidden" title={tag}>
+              <div key={i} className="relative w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center overflow-hidden" title={tTypes[tag] || tag}>
                 <Image src={img} alt={tag} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover scale-110 drop-shadow-sm" />
               </div>
             );
@@ -95,9 +102,9 @@ export default function PokemonCard({
         />
       </div>
       <div className="flex flex-col gap-1 mt-2">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">{pokemon.name}</h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
-          {pokemon.description}
+        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">{formatPokemonName(pokemon.name, language)}</h3>
+        <p className={`text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 ${isTranslating ? 'animate-pulse bg-slate-200 dark:bg-slate-700 h-10 rounded' : ''}`}>
+          {!isTranslating && translatedDescription}
         </p>
       </div>
       

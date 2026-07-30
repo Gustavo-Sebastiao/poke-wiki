@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import styles from './GifGallery.module.css';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Import all GIFs explicitly
 import gif1 from '../assets/gifs/2abc30e8edddb36244d76934fcdd005b.gif';
@@ -71,7 +72,24 @@ const Col = ({ gifs, direction }: { gifs: any[], direction: 'up' | 'down' }) => 
   );
 };
 
+export const GifBackground = ({ overlay = true, className = "", spread = false }: { overlay?: boolean, className?: string, spread?: boolean }) => {
+  return (
+    <div className={`${styles.galleryContainer} bg-[#fafafa] dark:bg-slate-900 ${className}`}>
+      <div className={`${styles.galleryWrapper} ${spread ? styles.spreadWrapper : ''}`}>
+        <Col gifs={col1} direction="up" />
+        <Col gifs={col2} direction="down" />
+        <Col gifs={col3} direction="up" />
+        <Col gifs={col4} direction="down" />
+      </div>
+      {overlay && (
+        <div className={`${styles.overlay} hidden md:block bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(250,250,250,0.95)_75%,#fafafa_100%)] dark:bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(15,23,42,0.95)_75%,#0f172a_100%)]`}></div>
+      )}
+    </div>
+  );
+};
+
 const GifGallery = () => {
+  const { language } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -97,25 +115,27 @@ const GifGallery = () => {
   }, []);
 
   return (
-    <div className={`${styles.galleryContainer} bg-[#fafafa] dark:bg-slate-900`} ref={containerRef}>
-      <div className={styles.galleryWrapper}>
-        <Col gifs={col1} direction="up" />
-        <Col gifs={col2} direction="down" />
-        <Col gifs={col3} direction="up" />
-        <Col gifs={col4} direction="down" />
-      </div>
-      <div className={`${styles.overlay} hidden md:block bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(250,250,250,0.95)_75%,#fafafa_100%)] dark:bg-[linear-gradient(to_right,transparent_0%,transparent_40%,rgba(15,23,42,0.95)_75%,#0f172a_100%)]`}></div>
+    <div className="relative w-full overflow-hidden" ref={containerRef}>
+      <GifBackground />
       
       {/* Texto e botão flutuantes com fade in da direita */}
       <div className={`absolute right-0 left-0 mx-auto md:mx-0 md:left-auto md:right-[4%] lg:right-[4%] w-[90%] md:w-[40%] z-30 flex flex-col items-center md:items-end justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'}`}>
         <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-slate-800 dark:text-white tracking-tighter mb-4 uppercase text-center md:text-right drop-shadow-md leading-tight">
-          Comece sua<br/>Aventura
+          {language === 'pt' ? (
+            <>Comece sua<br/>Aventura</>
+          ) : (
+            <>Start Your<br/>Adventure</>
+          )}
         </h2>
         <p className="text-base md:text-lg font-medium mb-8 max-w-md text-center md:text-right text-slate-600 dark:text-slate-300">
-          Desbrave o universo Pokémon. Milhares de espécies prontas para serem descobertas. Tire suas dúvidas e conheça cada detalhe desse mundo fascinante!
+          {language === 'pt' ? 
+            "Desbrave o universo Pokémon. Milhares de espécies prontas para serem descobertas. Tire suas dúvidas e conheça cada detalhe desse mundo fascinante!" 
+            : 
+            "Brave the Pokémon universe. Thousands of species ready to be discovered. Answer your questions and know every detail of this fascinating world!"
+          }
         </p>
         <button className="px-10 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 font-semibold rounded-full text-lg shadow-md border-2 border-teal-400 dark:border-teal-500 transition-all hover:scale-105 hover:bg-teal-50 dark:hover:bg-teal-900/30 flex items-center gap-2">
-          Acessar a Wiki
+          {language === 'pt' ? "Acessar a Wiki" : "Access the Wiki"}
         </button>
       </div>
     </div>
