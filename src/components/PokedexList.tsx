@@ -8,6 +8,8 @@ import { Search, ChevronLeft, ChevronRight, Menu, X, ChevronDown } from 'lucide-
 import { Pokemon } from '@/lib/pokemonService';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
+import Image from 'next/image';
+import PikachuNotFound from '@/assets/icons/nao_encontrado_pikachu.png';
 
 interface PokedexListProps {
   initialPokemons: Pokemon[];
@@ -679,7 +681,8 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         </>
       ) : (
         <div className="flex flex-col items-center justify-center p-16 bg-white dark:bg-slate-800 rounded-3xl shadow-soft mt-8">
-          <p className="text-slate-500 dark:text-slate-400 dark:text-slate-500 mb-4 text-center">{t.noPokemon}</p>
+          <Image src={PikachuNotFound} alt="Pikachu não encontrado" width={200} height={200} className="mb-6 opacity-90 drop-shadow-md hover:scale-105 transition-transform" />
+          <p className="text-slate-500 dark:text-slate-400 mb-4 text-center">{t.noPokemon}</p>
           {(selectedTypes.length > 0 || selectedGenerations.length > 0 || selectedRarities.length > 0 || searchTerm || showMegas || showAlolas || showGalar || showHisui || showPaldea || sortOrder !== null) && (
             <button 
               onClick={() => { setSelectedTypes([]); setSelectedGenerations([]); setSelectedRarities([]); setSearchTerm(''); setShowMegas(false); setShowAlolas(false); setShowGalar(false); setShowHisui(false); setShowPaldea(false); setSortOrder(null); setCurrentPage(1); }}
