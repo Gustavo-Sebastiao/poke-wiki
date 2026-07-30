@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import styles from './GifGallery.module.css';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useRouter } from 'next/navigation';
 
 // Import all GIFs explicitly
 import gif1 from '../assets/gifs/2abc30e8edddb36244d76934fcdd005b.gif';
@@ -90,6 +91,7 @@ export const GifBackground = ({ overlay = true, className = "", spread = false }
 
 const GifGallery = () => {
   const { language } = useLanguage();
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -134,7 +136,10 @@ const GifGallery = () => {
             "Brave the Pokémon universe. Thousands of species ready to be discovered. Answer your questions and know every detail of this fascinating world!"
           }
         </p>
-        <button className="px-10 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 font-semibold rounded-full text-lg shadow-md border-2 border-teal-400 dark:border-teal-500 transition-all hover:scale-105 hover:bg-teal-50 dark:hover:bg-teal-900/30 flex items-center gap-2">
+        <button 
+          onClick={() => router.push('/pokedex')}
+          className="px-10 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 font-semibold rounded-full text-lg shadow-md border-2 border-teal-400 dark:border-teal-500 transition-all hover:scale-105 hover:bg-teal-50 dark:hover:bg-teal-900/30 flex items-center gap-2"
+        >
           {language === 'pt' ? "Acessar a Wiki" : "Access the Wiki"}
         </button>
       </div>

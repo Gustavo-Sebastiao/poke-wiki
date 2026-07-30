@@ -281,21 +281,30 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   };
 
   const selectedPokemonId = searchParams.get('pokemon');
+  const selectedPokemonName = searchParams.get('pokemonName');
+  
   const selectedPokemon = useMemo(() => {
-    if (!selectedPokemonId) return null;
-    return initialPokemons.find(p => p.id === selectedPokemonId) || null;
-  }, [selectedPokemonId, initialPokemons]);
+    if (selectedPokemonId) {
+      return initialPokemons.find(p => p.id === selectedPokemonId) || null;
+    }
+    if (selectedPokemonName) {
+      return initialPokemons.find(p => p.name.toLowerCase() === selectedPokemonName.toLowerCase()) || null;
+    }
+    return null;
+  }, [selectedPokemonId, selectedPokemonName, initialPokemons]);
 
   const handleSelectPokemon = (pokemon: Pokemon) => {
     // Adiciona o parametro pokemon na URL sem recarregar a pagina
     const params = new URLSearchParams(searchParams.toString());
     params.set('pokemon', pokemon.id!);
+    params.delete('pokemonName');
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleCloseModal = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('pokemon');
+    params.delete('pokemonName');
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 

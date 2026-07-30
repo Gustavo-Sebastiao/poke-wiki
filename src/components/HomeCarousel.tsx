@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import charizardImg from "@/assets/images/Charizard_3d_model_1000_0001-Photoroom.png";
 import blastoiseImg from "@/assets/images/stat-blastoise-Photoroom.png";
 import venusaurImg from "@/assets/images/Venusaur_art-Photoroom.png";
@@ -15,6 +16,7 @@ const getSlides = (lang: 'pt' | 'en') => {
   return [
     {
       id: 4,
+      pokemonName: "Pikachu",
       title: t[0].title,
       subtitle: t[0].subtitle,
       description: t[0].description,
@@ -31,6 +33,7 @@ const getSlides = (lang: 'pt' | 'en') => {
     },
     {
       id: 1,
+      pokemonName: "Charizard",
       title: t[1].title,
       subtitle: t[1].subtitle,
       description: t[1].description,
@@ -44,6 +47,7 @@ const getSlides = (lang: 'pt' | 'en') => {
     },
     {
       id: 2,
+      pokemonName: "Blastoise",
       title: t[2].title,
       subtitle: t[2].subtitle,
       description: t[2].description,
@@ -57,6 +61,7 @@ const getSlides = (lang: 'pt' | 'en') => {
     },
     {
       id: 3,
+      pokemonName: "Venusaur",
       title: t[3].title,
       subtitle: t[3].subtitle,
       description: t[3].description,
@@ -73,6 +78,7 @@ const getSlides = (lang: 'pt' | 'en') => {
 
 export default function HomeCarousel() {
   const { language } = useLanguage();
+  const router = useRouter();
   const [current, setCurrent] = useState(0);
   const slides = getSlides(language);
   const tBtns = translations[language].carousel.buttons;
@@ -119,10 +125,16 @@ export default function HomeCarousel() {
           </p>
           
           <div className="flex items-center gap-6">
-            <button className={`px-10 py-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-semibold rounded-full text-lg shadow-md border-2 transition-all hover:scale-105 flex items-center gap-2 ${slides[current].buttonColor} ${slides[current].buttonHover}`}>
+            <button 
+              onClick={() => router.push(`/pokedex?pokemonName=${slides[current].pokemonName}`)}
+              className={`px-10 py-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-semibold rounded-full text-lg shadow-md border-2 transition-all hover:scale-105 flex items-center gap-2 ${slides[current].buttonColor} ${slides[current].buttonHover}`}
+            >
               {tBtns.seeMore}
             </button>
-            <button className="text-slate-600 dark:text-slate-300 font-semibold hover:text-slate-900 dark:text-white transition-colors">
+            <button 
+              onClick={() => router.push('/pokedex')}
+              className="text-slate-600 dark:text-slate-300 font-semibold hover:text-slate-900 dark:text-white transition-colors"
+            >
               {tBtns.explore}
             </button>
           </div>
