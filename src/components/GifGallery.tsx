@@ -119,7 +119,7 @@ const GifGallery = () => {
       <GifBackground />
       
       {/* Texto e botão flutuantes com fade in da direita */}
-      <div className={`absolute right-0 left-0 mx-auto md:mx-0 md:left-auto md:right-[4%] lg:right-[4%] w-[90%] md:w-[40%] z-30 flex flex-col items-center md:items-end justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'}`}>
+      <div className={`absolute top-0 bottom-0 right-0 left-0 mx-auto md:mx-0 md:left-auto md:right-[4%] lg:right-[4%] w-[90%] md:w-[40%] z-30 flex flex-col items-center md:items-end justify-center transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'}`}>
         <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-slate-800 dark:text-white tracking-tighter mb-4 uppercase text-center md:text-right drop-shadow-md leading-tight">
           {language === 'pt' ? (
             <>Comece sua<br/>Aventura</>
