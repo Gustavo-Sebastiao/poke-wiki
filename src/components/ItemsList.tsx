@@ -5,6 +5,7 @@ import { Search, ChevronLeft, ChevronRight, Menu, X, ChevronDown } from 'lucide-
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import type { Item } from '@/lib/itemService';
+import PikachuNotFound from '@/assets/icons/nao_encontrado_pikachu.png';
 import ItemModal from './ItemModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
@@ -405,12 +406,18 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
           )}
         </>
       ) : (
-        <div className="text-center py-20">
-          <div className="text-slate-400 dark:text-slate-600 mb-4">
-            <Search className="w-16 h-16 mx-auto opacity-50" />
-          </div>
-          <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">{t.noItem}</h3>
-          <p className="text-slate-500 dark:text-slate-400">{t.tryAnother}</p>
+        <div className="flex flex-col items-center justify-center p-16 bg-white dark:bg-slate-800 rounded-3xl shadow-soft mt-8">
+          <Image src={PikachuNotFound} alt="Pikachu não encontrado" width={200} height={200} className="mb-6 opacity-90 drop-shadow-md hover:scale-105 transition-transform" />
+          <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2 text-center">{t.noItem}</h3>
+          <p className="text-slate-500 dark:text-slate-400 text-center mb-4">{t.tryAnother}</p>
+          {(searchTerm || selectedCategories.length > 0 || selectedRarities.length > 0) && (
+            <button 
+              onClick={() => { setSelectedCategories([]); setSelectedRarities([]); setSearchTerm(''); setCurrentPage(1); }}
+              className="px-6 py-2 bg-slate-800 text-white font-bold rounded-full hover:bg-slate-700 transition-colors mt-2"
+            >
+              {t.clearSearch || "Limpar Pesquisa"}
+            </button>
+          )}
         </div>
       )}
     </>

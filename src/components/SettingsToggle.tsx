@@ -27,7 +27,7 @@ export default function SettingsToggle() {
 
   if (!mounted) {
     return (
-      <div className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-slate-800 dark:bg-slate-800 opacity-50"></div>
+      <div className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-14 h-14 opacity-50"></div>
     );
   }
 
@@ -38,10 +38,10 @@ export default function SettingsToggle() {
     <div className="fixed bottom-8 right-8 z-50" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-14 h-14 bg-slate-800 text-amber-400 dark:bg-slate-700 dark:text-amber-300 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        className="flex items-center justify-center w-14 h-14 text-slate-800 dark:text-slate-100 drop-shadow-md hover:scale-110 transition-all duration-300"
         title={language === "pt" ? "Configurações" : "Settings"}
       >
-        <Settings className={`w-6 h-6 transition-transform duration-500 ${isOpen ? "rotate-90" : ""}`} />
+        <Settings className={`w-8 h-8 transition-transform duration-500 ${isOpen ? "rotate-90" : ""}`} />
       </button>
 
       {isOpen && (
