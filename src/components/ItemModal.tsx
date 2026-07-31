@@ -37,7 +37,7 @@ export default function ItemModal({ item, onClose }: ItemModalProps) {
     fetchDetails();
 
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
     };
   }, [item.id]);
 

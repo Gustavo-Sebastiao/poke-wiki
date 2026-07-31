@@ -60,7 +60,7 @@ export default function Home() {
   }, [activeSection]);
 
   return (
-    <main className="max-md:relative max-md:overflow-y-auto max-md:h-screen md:fixed md:inset-0 w-full h-full bg-slate-50 dark:bg-slate-900 md:overflow-hidden">
+    <main className="max-md:relative max-md:flex max-md:flex-col md:fixed md:inset-0 w-full max-md:h-auto md:h-full bg-slate-50 dark:bg-slate-900 md:overflow-hidden">
       {/* Primeira Sessão: O Carrossel que já existia */}
       <section 
         className={`max-md:relative max-md:w-full max-md:h-[100dvh] md:absolute md:inset-0 md:w-full md:h-full md:transition-opacity md:duration-1000 md:ease-in-out ${

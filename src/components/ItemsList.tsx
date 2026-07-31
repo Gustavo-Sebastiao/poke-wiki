@@ -9,6 +9,50 @@ import PikachuNotFound from '@/assets/icons/nao_encontrado_pikachu.png';
 import ItemModal from './ItemModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+
+function ItemCardComponent({ item, tCategory, tRarity, handleSelectItem }: any) {
+  const { translatedText, loading } = useDynamicTranslation(item.description || '');
+
+  return (
+    <div 
+      onClick={() => handleSelectItem(item)}
+      className="group relative flex flex-col items-center justify-start bg-white dark:bg-slate-800 rounded-[2rem] p-4 sm:p-6 border-2 border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-[#59F7E2] dark:hover:border-[#59F7E2] transition-all duration-300 cursor-pointer h-full"
+    >
+      {/* Rarity Badge */}
+      <div className={`absolute top-3 left-3 sm:top-4 sm:left-4 px-2 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase shadow-sm opacity-80 group-hover:opacity-100 transition-opacity
+        ${item.rarity === 'Único' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+          item.rarity === 'Épico' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+          item.rarity === 'Raro' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+          item.rarity === 'Incomum' ? 'bg-green-100 text-green-700 border border-green-200' :
+          'bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-700 dark:text-slate-300'
+        }
+      `}>
+        {tRarity[item.rarity] || item.rarity}
+      </div>
+
+      <div className="relative w-16 h-16 md:w-20 md:h-20 mt-4 mb-4 transition-transform group-hover:scale-110 shrink-0">
+        <Image
+          src={item.image_url}
+          alt={item.name}
+          fill sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-contain filter drop-shadow-md"
+          unoptimized
+        />
+      </div>
+      
+      <div className="text-center w-full flex flex-col flex-1">
+        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-1">{tCategory[item.category] || item.category}</p>
+        <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 capitalize mb-3 line-clamp-1">
+          {item.name}
+        </h3>
+        <p className={`text-sm text-slate-500 dark:text-slate-400 line-clamp-3 italic flex-1 ${loading ? 'animate-pulse bg-slate-200 dark:bg-slate-700 h-10 rounded' : ''}`}>
+          {!loading && `"${translatedText}"`}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 interface ItemsListProps {
   initialItems: Item[];
@@ -53,6 +97,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
   const [selectedRarities, setSelectedRarities] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -121,8 +166,8 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
         <ItemModal item={selectedItem} onClose={handleCloseModal} />
       )}
 
-      {/* Search Bar & Mobile Filters Button */}
-      <div className="sticky top-4 z-40 flex gap-3 mb-6 relative items-stretch max-w-2xl mx-auto md:mr-0">
+      {/* Desktop Search Bar */}
+      <div className="hidden md:flex gap-3 mb-12 items-stretch max-w-2xl mx-auto md:mr-0 relative z-20">
         <div className="relative flex-1">
           <input 
             type="text" 
@@ -133,14 +178,45 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
           />
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-800 dark:text-slate-100 w-6 h-6 pointer-events-none" />
         </div>
+      </div>
 
-        <button 
-          onClick={() => setShowMobileFilters(true)}
-          className="md:hidden shrink-0 w-[60px] bg-white dark:bg-slate-800 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-all"
-          title="Filtros"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
+      {/* Mobile Search & Menu Row */}
+      <div className="md:hidden flex items-center mb-12 gap-3 w-full bg-transparent relative z-20">
+        {showMobileSearch ? (
+          <div className="flex-1 relative flex items-center bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
+            <input 
+              type="text" 
+              autoFocus
+              placeholder={t.searchItem}
+              value={searchTerm}
+              onChange={handleSearch}
+              className="w-full pl-6 pr-12 py-3 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-500 font-medium"
+            />
+            <button 
+              onClick={() => { setShowMobileSearch(false); setSearchTerm(''); }}
+              className="absolute right-2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-start items-center gap-6 w-full px-2">
+            <button 
+              onClick={() => setShowMobileFilters(true)}
+              className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
+              title="Filtros"
+            >
+              <Menu className="w-7 h-7" />
+            </button>
+            <button 
+              onClick={() => setShowMobileSearch(true)}
+              className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
+              title="Pesquisar"
+            >
+              <Search className="w-7 h-7" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Desktop Filters Bar */}
@@ -304,43 +380,13 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {paginatedItems.map((item) => (
-              <div 
+              <ItemCardComponent 
                 key={item.id} 
-                onClick={() => handleSelectItem(item)}
-                className="group relative flex flex-col items-center justify-start bg-white dark:bg-slate-800 rounded-[2rem] p-6 border-2 border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-2 hover:border-[#59F7E2] dark:hover:border-[#59F7E2] transition-all duration-300 cursor-pointer h-full"
-              >
-                {/* Rarity Badge */}
-                <div className={`absolute top-4 left-4 px-2 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase shadow-sm opacity-80 group-hover:opacity-100 transition-opacity
-                  ${item.rarity === 'Único' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
-                    item.rarity === 'Épico' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
-                    item.rarity === 'Raro' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                    item.rarity === 'Incomum' ? 'bg-green-100 text-green-700 border border-green-200' :
-                    'bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-700 dark:text-slate-300'
-                  }
-                `}>
-                  {tRarity[item.rarity] || item.rarity}
-                </div>
-
-                <div className="relative w-16 h-16 md:w-20 md:h-20 mt-4 mb-4 transition-transform group-hover:scale-110 shrink-0">
-                  <Image
-                    src={item.image_url}
-                    alt={item.name}
-                    fill sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-contain filter drop-shadow-md"
-                    unoptimized
-                  />
-                </div>
-                
-                <div className="text-center w-full flex flex-col flex-1">
-                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-1">{tCategory[item.category] || item.category}</p>
-                  <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 capitalize mb-3 line-clamp-1">
-                    {item.name}
-                  </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3 italic flex-1">
-                    "{item.description}"
-                  </p>
-                </div>
-              </div>
+                item={item} 
+                tCategory={tCategory} 
+                tRarity={tRarity} 
+                handleSelectItem={handleSelectItem} 
+              />
             ))}
           </div>
           

@@ -52,12 +52,12 @@ export default function PokemonCard({
   return (
     <div 
       onClick={() => onSelect ? onSelect(pokemon) : router.push(`/pokemon/${pokemon.id}`)}
-      className={`group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-lg cursor-pointer transition-all duration-300 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
+      className={`group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-lg cursor-pointer transition-all duration-300 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
     >
       
       {/* Tipos no Canto Superior Esquerdo */}
       {pokemon.type && (
-        <div className="absolute top-4 left-4 z-10 flex gap-1">
+        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex gap-1">
           {pokemon.type.split(',').map((t, i) => {
             const tag = t.trim();
             const img = tagImages[tag];
@@ -72,7 +72,7 @@ export default function PokemonCard({
 
       {/* Botões de Ação Absolutos (Apenas Admin) */}
       {isAdmin && (
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 transition-all">
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex flex-col gap-2 transition-all">
           <Link 
             href={`/admin/editar/${pokemon.id}`}
             onClick={(e) => e.stopPropagation()}

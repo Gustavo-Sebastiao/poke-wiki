@@ -6,7 +6,7 @@ export default async function ItensPage() {
   const items = await getItems();
 
   return (
-    <div className="flex flex-col gap-8 max-w-6xl mx-auto px-6 pt-24 pb-8">
+    <div className="flex flex-col gap-8 max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-8 w-full overflow-x-hidden">
       <Suspense fallback={<div>Carregando...</div>}>
         <ItemsList initialItems={items} />
       </Suspense>

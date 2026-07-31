@@ -57,7 +57,7 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
     // Bloquear scroll do body enquanto o modal estiver aberto
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, []);
 

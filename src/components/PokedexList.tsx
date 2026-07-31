@@ -92,6 +92,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   const [sortOrder, setSortOrder] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -319,8 +320,8 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         <PokemonModal pokemon={selectedPokemon} onClose={handleCloseModal} />
       )}
       
-      {/* Search Bar & Mobile Filters Button */}
-      <div className="sticky top-4 z-40 flex gap-3 mb-6 relative items-stretch max-w-2xl mx-auto md:mr-0">
+      {/* Desktop Search Bar */}
+      <div className="hidden md:flex gap-3 mb-12 items-stretch max-w-2xl mx-auto md:mr-0 relative z-20">
         <div className="relative flex-1">
           <input 
             type="text" 
@@ -331,14 +332,45 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
           />
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-800 dark:text-slate-100 w-6 h-6 pointer-events-none" />
         </div>
+      </div>
 
-        <button 
-          onClick={() => setShowMobileFilters(true)}
-          className="md:hidden shrink-0 w-[60px] bg-white dark:bg-slate-800 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-full shadow-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-all"
-          title="Filtros"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
+      {/* Mobile Search & Menu Row */}
+      <div className="md:hidden flex items-center mb-12 gap-3 w-full bg-transparent relative z-20">
+        {showMobileSearch ? (
+          <div className="flex-1 relative flex items-center bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
+            <input 
+              type="text" 
+              autoFocus
+              placeholder={t.search}
+              value={searchTerm}
+              onChange={handleSearch}
+              className="w-full pl-6 pr-12 py-3 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-500 font-medium"
+            />
+            <button 
+              onClick={() => { setShowMobileSearch(false); setSearchTerm(''); }}
+              className="absolute right-2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-start items-center gap-6 w-full px-2">
+            <button 
+              onClick={() => setShowMobileFilters(true)}
+              className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
+              title="Filtros"
+            >
+              <Menu className="w-7 h-7" />
+            </button>
+            <button 
+              onClick={() => setShowMobileSearch(true)}
+              className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
+              title="Pesquisar"
+            >
+              <Search className="w-7 h-7" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Desktop Filters Bar */}
