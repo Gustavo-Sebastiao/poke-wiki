@@ -285,7 +285,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   
   const selectedPokemon = useMemo(() => {
     if (selectedPokemonId) {
-      return initialPokemons.find(p => p.id === selectedPokemonId) || null;
+      return initialPokemons.find(p => String(p.id) === selectedPokemonId) || null;
     }
     if (selectedPokemonName) {
       return initialPokemons.find(p => p.name.toLowerCase() === selectedPokemonName.toLowerCase()) || null;
@@ -305,7 +305,8 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('pokemon');
     params.delete('pokemonName');
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl, { scroll: false });
   };
 
   if (!isInitialized) {

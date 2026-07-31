@@ -25,11 +25,11 @@ const getSlides = (lang: 'pt' | 'en') => {
       buttonHover: "hover:bg-slate-50",
       image: pikachuImg.src,
       price: t[0].price,
-      imageContainerClass: "absolute top-[25%] left-1/2 md:left-[53%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none overflow-visible",
-      imageSizeClass: "w-48 h-48 md:w-[280px] md:h-[280px] lg:w-[320px] lg:h-[320px] xl:w-[380px] xl:h-[380px]",
+      imageContainerClass: "absolute top-[40%] md:top-[25%] max-md:left-[55%] md:left-[53%] transform -translate-x-1/2 -translate-y-1/2 z-10 md:z-20 pointer-events-none overflow-visible",
+      imageSizeClass: "w-[22rem] h-[22rem] sm:w-[26rem] sm:h-[26rem] md:w-[280px] md:h-[280px] lg:w-[320px] lg:h-[320px] xl:w-[380px] xl:h-[380px]",
       extraImage: sylveonImg.src,
-      extraImageContainerClass: "absolute top-[65%] left-1/2 md:left-[75%] transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none overflow-visible",
-      extraImageSizeClass: "w-56 h-56 md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] xl:w-[550px] xl:h-[550px]"
+      extraImageContainerClass: "absolute top-[65%] left-1/2 md:left-[75%] transform -translate-x-1/2 -translate-y-1/2 z-0 md:z-30 pointer-events-none overflow-visible",
+      extraImageSizeClass: "w-[18rem] h-[18rem] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] xl:w-[550px] xl:h-[550px]"
     },
     {
       id: 1,
@@ -42,8 +42,8 @@ const getSlides = (lang: 'pt' | 'en') => {
       buttonHover: "hover:bg-slate-50",
       image: charizardImg.src,
       price: t[1].price,
-      imageContainerClass: "absolute top-1/2 left-1/2 md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none overflow-visible",
-      imageSizeClass: "w-80 h-80 md:w-[600px] md:h-[600px] lg:w-[750px] lg:h-[750px] xl:w-[850px] xl:h-[850px]"
+      imageContainerClass: "absolute top-[45%] md:top-1/2 max-md:left-[55%] md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-10 md:z-20 pointer-events-none overflow-visible",
+      imageSizeClass: "w-[28rem] h-[28rem] sm:w-[32rem] sm:h-[32rem] md:w-[600px] md:h-[600px] lg:w-[750px] lg:h-[750px] xl:w-[850px] xl:h-[850px]"
     },
     {
       id: 2,
@@ -56,8 +56,8 @@ const getSlides = (lang: 'pt' | 'en') => {
       buttonHover: "hover:bg-slate-50",
       image: blastoiseImg.src,
       price: t[2].price,
-      imageContainerClass: "absolute top-1/2 left-1/2 md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none overflow-visible",
-      imageSizeClass: "w-64 h-64 md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px]"
+      imageContainerClass: "absolute top-[45%] md:top-1/2 max-md:left-[55%] md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-10 md:z-20 pointer-events-none overflow-visible",
+      imageSizeClass: "w-[26rem] h-[26rem] sm:w-[30rem] sm:h-[30rem] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px]"
     },
     {
       id: 3,
@@ -70,8 +70,8 @@ const getSlides = (lang: 'pt' | 'en') => {
       buttonHover: "hover:bg-slate-50",
       image: venusaurImg.src,
       price: t[3].price,
-      imageContainerClass: "absolute top-1/2 left-1/2 md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none overflow-visible",
-      imageSizeClass: "w-80 h-80 md:w-[600px] md:h-[600px] lg:w-[750px] lg:h-[750px] xl:w-[850px] xl:h-[850px]"
+      imageContainerClass: "absolute top-[35%] md:top-1/2 max-md:left-[40%] max-md:-scale-x-100 md:left-[65%] transform -translate-x-1/2 -translate-y-1/2 z-10 md:z-20 pointer-events-none overflow-visible",
+      imageSizeClass: "w-[28rem] h-[28rem] sm:w-[32rem] sm:h-[32rem] md:w-[600px] md:h-[600px] lg:w-[750px] lg:h-[750px] xl:w-[850px] xl:h-[850px]"
     }
   ];
 };
@@ -96,76 +96,94 @@ export default function HomeCarousel() {
       nextSlide();
     }, 10000);
     return () => clearInterval(timer);
-  }, [current]);
+  }, [current, slides.length]);
 
   return (
-    <div className={`relative w-full h-full rounded-none overflow-hidden transition-colors duration-700 shadow-xl ${slides[current].bgColor}`}>
+    <div className={`relative w-full h-full rounded-none overflow-hidden transition-colors duration-700 shadow-xl max-md:bg-white max-md:dark:bg-slate-900 ${slides[current].bgColor}`}>
       
-      {/* Container branco na esquerda */}
-      <div className="absolute top-0 bottom-0 left-0 w-full md:w-[65%] bg-white dark:bg-slate-900 p-8 md:p-16 flex flex-col justify-center z-10">
-        
-        {/* Bolinhas de fundo */}
-        <div className="absolute top-[-80px] left-[-40px] w-64 h-64 md:w-96 md:h-96 bg-slate-100 dark:bg-slate-800 rounded-full opacity-60 pointer-events-none"></div>
-        <div className="absolute bottom-[-40px] right-[5%] w-40 h-40 md:w-56 md:h-56 bg-slate-100 dark:bg-slate-800 rounded-full opacity-60 pointer-events-none"></div>
+      {/* --- Background Shapes --- */}
+      {/* Desktop White Background Container */}
+      <div className="hidden md:block absolute top-0 bottom-0 left-0 w-[65%] bg-white dark:bg-slate-900 z-0 transition-colors duration-700"></div>
+      
+      {/* Mobile Colored Diagonal Background (ON TOP of image) */}
+      <div className={`md:hidden absolute inset-0 z-20 transition-colors duration-700 ${slides[current].bgColor}`} style={{ clipPath: 'polygon(0 85%, 100% 45%, 100% 100%, 0 100%)' }}></div>
 
-        <div key={`text-${current}`} className="relative z-20 flex flex-col animate-fade-in-right" style={{ animationDelay: '300ms' }}>
-          <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter mb-1 transition-all">
-            {slides[current].title}
-          </h2>
-          <h3 className="text-3xl md:text-5xl font-light italic text-slate-500 dark:text-slate-400 dark:text-slate-500 mb-4 transition-all uppercase">
-            {slides[current].subtitle}
-          </h3>
+      {/* --- Decorative Elements --- */}
+      {/* Desktop Circles */}
+      <div className="hidden md:block absolute top-[-80px] left-[-40px] w-96 h-96 bg-slate-100 dark:bg-slate-800 rounded-full opacity-60 pointer-events-none z-0"></div>
+      <div className="hidden md:block absolute bottom-[-40px] right-[35%] w-56 h-56 bg-slate-100 dark:bg-slate-800 rounded-full opacity-60 pointer-events-none z-0"></div>
+      
+      {/* Mobile Circles */}
+      <div className="md:hidden absolute top-[-40px] left-[-40px] w-64 h-64 bg-slate-100 dark:bg-slate-800 rounded-full opacity-80 pointer-events-none z-0"></div>
+      <div className="md:hidden absolute top-[10%] right-[10%] w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full opacity-50 pointer-events-none z-0"></div>
+
+      {/* --- Content Layer --- */}
+      <div className="absolute inset-0 w-full h-full flex flex-col md:flex-row z-30 pointer-events-none">
+        
+        {/* Text Container */}
+        <div className="relative w-full h-full md:w-[65%] p-8 md:p-16 flex flex-col justify-end md:justify-center items-end md:items-start pointer-events-auto pb-16 md:pb-16 z-20">
           
-          <div className="text-3xl font-bold text-slate-800 dark:text-slate-100 border-b-2 border-slate-200 dark:border-slate-700 pb-4 inline-block max-w-max mb-6">
-            {slides[current].price}
-          </div>
-          
-          <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base max-w-md mb-8 h-20 overflow-hidden transition-all">
-            {slides[current].description}
-          </p>
-          
-          <div className="flex items-center gap-6">
-            <button 
-              onClick={() => router.push(`/pokedex?pokemonName=${slides[current].pokemonName}`)}
-              className={`px-10 py-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-semibold rounded-full text-lg shadow-md border-2 transition-all hover:scale-105 flex items-center gap-2 ${slides[current].buttonColor} ${slides[current].buttonHover}`}
-            >
-              {tBtns.seeMore}
-            </button>
-            <button 
-              onClick={() => router.push('/pokedex')}
-              className="text-slate-600 dark:text-slate-300 font-semibold hover:text-slate-900 dark:text-white transition-colors"
-            >
-              {tBtns.explore}
-            </button>
+          <div key={`text-${current}`} className="relative flex flex-col items-end md:items-start text-right md:text-left max-md:animate-fade-in-up md:animate-fade-in-right w-full" style={{ animationDelay: '300ms' }}>
+            
+            <h2 className="text-5xl sm:text-6xl md:text-7xl font-black text-slate-900 dark:text-white max-md:text-black max-md:dark:text-white tracking-tighter mb-0 md:mb-1 transition-all">
+              {slides[current].title}
+            </h2>
+            
+            <h3 className="text-[28px] sm:text-4xl md:text-5xl font-black md:font-light md:italic text-white dark:text-slate-400 max-md:text-white max-md:dark:text-white mb-3 md:mb-4 transition-all uppercase max-md:drop-shadow-sm max-md:tracking-wide">
+              {slides[current].subtitle}
+            </h3>
+            
+            <div className="hidden md:inline-block text-3xl font-bold text-slate-800 dark:text-slate-100 border-b-2 border-slate-200 dark:border-slate-700 pb-4 max-w-max mb-6">
+              {slides[current].price}
+            </div>
+            
+            <p className="text-slate-600 dark:text-slate-300 max-md:text-black max-md:dark:text-black text-[13px] sm:text-sm md:text-base max-w-[260px] sm:max-w-[320px] md:max-w-md mb-6 md:mb-8 h-auto md:h-20 overflow-hidden transition-all max-md:font-medium">
+              {slides[current].description}
+            </p>
+            
+            <div className="flex items-center justify-end md:justify-start gap-4 md:gap-6 w-full">
+              <button 
+                onClick={() => router.push(`/pokedex?pokemonName=${slides[current].pokemonName}`)}
+                className={`px-8 py-2 md:px-10 md:py-3 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-semibold rounded-full text-sm md:text-lg shadow-md border-2 transition-all hover:scale-105 flex items-center gap-2 max-md:bg-white max-md:text-slate-900 max-md:border-[#59F7E2] max-md:dark:bg-white max-md:dark:text-slate-900 md:${slides[current].buttonColor} md:${slides[current].buttonHover}`}
+              >
+                {tBtns.seeMore}
+              </button>
+              <button 
+                onClick={() => router.push('/pokedex')}
+                className="hidden md:block text-slate-600 dark:text-slate-300 font-semibold hover:text-slate-900 dark:text-white transition-colors"
+              >
+                {tBtns.explore}
+              </button>
+            </div>
+            
           </div>
         </div>
       </div>
 
-      {/* Imagem do Pokemon com posição e tamanho específicos de cada slide */}
+      {/* --- Images --- */}
       <div key={`image-${current}`} className={`${slides[current].imageContainerClass} animate-fade-in-right`}>
-        <div className={`relative drop-shadow-2xl hover:scale-105 transition-transform duration-300 ${slides[current].imageSizeClass}`}>
+        <div className={`relative drop-shadow-2xl transition-transform duration-300 ${slides[current].imageSizeClass}`}>
           <img 
             src={slides[current].image} 
             alt={slides[current].title}
-            className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+            className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-md:scale-[1.15]"
           />
         </div>
       </div>
 
-      {/* Imagem extra opcional (Ex: Sylveon no slide do Pikachu) */}
       {slides[current].extraImage && (
-        <div key={`extra-image-${current}`} className={`${slides[current].extraImageContainerClass} animate-fade-in-right`} style={{ animationDelay: '150ms' }}>
-          <div className={`relative drop-shadow-2xl hover:scale-105 transition-transform duration-300 ${slides[current].extraImageSizeClass}`}>
+        <div key={`extra-image-${current}`} className={`${slides[current].extraImageContainerClass} animate-fade-in-right max-md:hidden`} style={{ animationDelay: '150ms' }}>
+          <div className={`relative drop-shadow-2xl transition-transform duration-300 ${slides[current].extraImageSizeClass}`}>
             <img 
               src={slides[current].extraImage} 
               alt="Extra Pokémon"
-              className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+              className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-md:scale-[1.15]"
             />
           </div>
         </div>
       )}
 
-      {/* Botões de navegação */}
+      {/* --- Navigation Buttons --- */}
       <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 hidden md:block">
         <button 
           onClick={prevSlide} 
@@ -183,7 +201,7 @@ export default function HomeCarousel() {
         </button>
       </div>
       
-      {/* Indicadores (Dots) na base */}
+      {/* Indicators (Dots) */}
       <div className="absolute bottom-6 left-1/2 md:left-[30%] transform -translate-x-1/2 z-40 flex gap-2">
         {slides.map((_, index) => (
           <button

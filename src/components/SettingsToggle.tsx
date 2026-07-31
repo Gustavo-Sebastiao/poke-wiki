@@ -35,7 +35,7 @@ export default function SettingsToggle() {
   const isPt = language === "pt";
 
   return (
-    <div className="fixed bottom-8 right-8 z-50" ref={menuRef}>
+    <div className="fixed bottom-8 max-md:left-6 right-8 max-md:right-auto z-50" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-center w-14 h-14 text-slate-800 dark:text-slate-100 drop-shadow-md hover:scale-110 transition-all duration-300"
@@ -45,7 +45,7 @@ export default function SettingsToggle() {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-16 right-0 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-4 w-64 animate-fade-in-down origin-bottom-right">
+        <div className="absolute bottom-16 right-0 max-md:right-auto max-md:left-0 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-4 w-64 animate-fade-in-down origin-bottom-right max-md:origin-bottom-left">
           <div className="flex flex-col gap-4">
             
             {/* Theme Toggle */}
