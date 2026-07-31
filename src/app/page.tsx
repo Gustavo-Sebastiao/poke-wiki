@@ -34,6 +34,9 @@ export default function Home() {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      // Don't intercept touches on mobile, let native scrolling handle it
+      if (window.innerWidth < 768) return;
+      
       if (isScrolling.current) return;
       
       const touchEndY = e.touches[0].clientY;
@@ -57,11 +60,11 @@ export default function Home() {
   }, [activeSection]);
 
   return (
-    <main className="fixed inset-0 w-full h-full bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <main className="max-md:relative max-md:overflow-y-auto max-md:h-screen md:fixed md:inset-0 w-full h-full bg-slate-50 dark:bg-slate-900 md:overflow-hidden">
       {/* Primeira Sessão: O Carrossel que já existia */}
       <section 
-        className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-          activeSection === 0 ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
+        className={`max-md:relative max-md:w-full max-md:h-[100dvh] md:absolute md:inset-0 md:w-full md:h-full md:transition-opacity md:duration-1000 md:ease-in-out ${
+          activeSection === 0 ? "md:opacity-100 md:z-10 md:pointer-events-auto" : "md:opacity-0 md:z-0 md:pointer-events-none"
         }`}
       >
         <HomeCarousel />
@@ -69,8 +72,8 @@ export default function Home() {
       
       {/* Segunda Sessão: Galeria de GIFs */}
       <section 
-        className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-          activeSection === 1 ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
+        className={`max-md:relative max-md:w-full max-md:min-h-screen md:absolute md:inset-0 md:w-full md:h-full md:transition-opacity md:duration-1000 md:ease-in-out ${
+          activeSection === 1 ? "md:opacity-100 md:z-10 md:pointer-events-auto" : "md:opacity-0 md:z-0 md:pointer-events-none"
         }`}
       >
         <GifGallery />

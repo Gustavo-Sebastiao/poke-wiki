@@ -127,7 +127,7 @@ export default function HomeCarousel() {
 
   return (
     <div 
-      className={`relative w-full h-full rounded-none overflow-hidden transition-colors duration-700 shadow-xl max-md:bg-white max-md:dark:bg-slate-900 ${slides[current].bgColor} overscroll-y-none touch-pan-y`}
+      className={`relative w-full h-full rounded-none overflow-hidden transition-colors duration-700 shadow-xl max-md:bg-white max-md:dark:bg-slate-900 ${slides[current].bgColor}`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
