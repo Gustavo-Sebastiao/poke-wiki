@@ -83,6 +83,33 @@ export default function HomeCarousel() {
   const slides = getSlides(language);
   const tBtns = translations[language].carousel.buttons;
 
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      nextSlide();
+    } else if (isRightSwipe) {
+      prevSlide();
+    }
+  };
+
   const prevSlide = () => {
     setCurrent(current === 0 ? slides.length - 1 : current - 1);
   };
@@ -99,7 +126,12 @@ export default function HomeCarousel() {
   }, [current, slides.length]);
 
   return (
-    <div className={`relative w-full h-full rounded-none overflow-hidden transition-colors duration-700 shadow-xl max-md:bg-white max-md:dark:bg-slate-900 ${slides[current].bgColor}`}>
+    <div 
+      className={`relative w-full h-full rounded-none overflow-hidden transition-colors duration-700 shadow-xl max-md:bg-white max-md:dark:bg-slate-900 ${slides[current].bgColor} overscroll-y-none touch-pan-y`}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       
       {/* --- Background Shapes --- */}
       {/* Desktop White Background Container */}
