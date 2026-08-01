@@ -1,6 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
-const url = 'https://lzidmnyenphlshihhpka.supabase.co';
-const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6aWRtbnllbnBobHNoaWhocGthIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDkzNzQ5NSwiZXhwIjoyMDk2NTEzNDk1fQ.iz25H0TDlfIIYgtiBDPR5QTzKF-jBzUMlGDezesKMUw';
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.SUPABASE_SECRET_KEY;
 const supabase = createClient(url, key);
 
 async function check() {
