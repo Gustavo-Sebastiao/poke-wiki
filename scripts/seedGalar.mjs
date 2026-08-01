@@ -1,6 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+import { supabase } from './supabaseAdmin.mjs';
 
 const resAll = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
 const dataAll = await resAll.json();

@@ -127,22 +127,3 @@ export function translateStat(stat: string, lang: 'pt' | 'en'): string {
   };
   return translationsPt[stat.toLowerCase()] || capitalize(stat);
 }
-
-export async function translateText(text: string, targetLang: string): Promise<string> {
-  if (!text) return text;
-  
-  try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
-    const response = await fetch(url);
-    if (!response.ok) return text;
-    
-    const data = await response.json();
-    if (data && data[0] && Array.isArray(data[0])) {
-      return data[0].map((segment: any) => segment[0]).join('');
-    }
-    return text;
-  } catch (error) {
-    console.error('Erro na tradução:', error);
-    return text;
-  }
-}

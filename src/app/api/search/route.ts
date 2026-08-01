@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import itemsData from '@/data/items.json';
 
 export async function GET(request: Request) {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   
   try {
     // 1. Buscar Pokémons
-    let pokemonQuery = supabase
+    let pokemonQuery = supabaseAdmin
       .from('pokemons')
       .select('id, name, image_url')
       .limit(5);

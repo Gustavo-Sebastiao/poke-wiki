@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import type { Item, ItemDetails } from '@/lib/itemService';
-import { getItemDetails } from '@/lib/itemService';
+import { getItemDetailsAction } from '@/app/actions/dataActions';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
@@ -15,7 +15,7 @@ interface ItemModalProps {
 export default function ItemModal({ item, onClose }: ItemModalProps) {
   const { language } = useLanguage();
   const t = translations[language].itemModal;
-  const tCategory = translations[language].itemCategories as any;
+  const tCategory = translations[language].itemCategories as Record<string, string>;
   const [details, setDetails] = useState<ItemDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export default function ItemModal({ item, onClose }: ItemModalProps) {
     // Buscar detalhes extras
     const fetchDetails = async () => {
       setLoading(true);
-      const data = await getItemDetails(item.id);
+      const data = await getItemDetailsAction(item.id);
       setDetails(data);
       setLoading(false);
     };
@@ -79,7 +79,7 @@ export default function ItemModal({ item, onClose }: ItemModalProps) {
               <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full animate-pulse my-1"></div>
             ) : (
               <p className="text-slate-600 dark:text-slate-300 text-center italic text-sm md:text-base">
-                "{translatedDesc}"
+                &quot;{translatedDesc}&quot;
               </p>
             )}
           </div>

@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { updatePokemon, getPokemonById } from '@/lib/pokemonService';
+import { getPokemonAction, updatePokemonAction } from '@/app/actions/pokemonActions';
 import { useRouter, useParams } from 'next/navigation';
 import { Save, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function EditPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { role, session, loading: authLoading } = useAuth();
   
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -26,7 +28,9 @@ export default function EditPage() {
   useEffect(() => {
     async function loadPokemon() {
       try {
-        const data = await getPokemonById(id);
+        const result = await getPokemonAction(session!.access_token, id);
+        if (!result.success || !result.data) throw new Error(result.message);
+        const data = result.data;
         setFormData({
           name: data.name || '',
           type: data.type || '',
@@ -34,18 +38,24 @@ export default function EditPage() {
           weaknesses: data.weaknesses ? data.weaknesses.join(', ') : '',
           image_url: data.image_url || ''
         });
-      } catch (err: any) {
+      } catch (error) {
         setError('Não foi possível carregar os dados deste Pokémon.');
-        console.error(err);
+        console.error(error);
       } finally {
         setInitialLoading(false);
       }
     }
     
-    if (id) {
+    if (id && session?.access_token && (role === 'admin' || role === 'superadmin')) {
       loadPokemon();
     }
-  }, [id]);
+  }, [id, session, role]);
+
+  useEffect(() => {
+    if (!authLoading && role !== 'admin' && role !== 'superadmin') {
+      router.push('/login');
+    }
+  }, [authLoading, role, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -62,17 +72,18 @@ export default function EditPage() {
         weaknesses: formData.weaknesses.split(',').map(w => w.trim()).filter(w => w),
       };
       
-      await updatePokemon(id, pokemonData);
+      const result = await updatePokemonAction(session?.access_token ?? '', id, pokemonData);
+      if (!result.success) throw new Error(result.message);
       router.push('/');
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || 'Erro ao atualizar pokémon.');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Erro ao atualizar pokémon.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (initialLoading) {
+  if (authLoading || (role !== 'admin' && role !== 'superadmin') || initialLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-[#59F7E2] mb-4" />

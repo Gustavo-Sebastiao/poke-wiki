@@ -1,7 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './supabaseAdmin.mjs';
 import translate from 'translate';
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 translate.engine = 'google';
 
 function isProbablyEnglish(text) {

@@ -1,3 +1,5 @@
+import 'server-only';
+
 export interface Item {
   id: number;
   name: string;
