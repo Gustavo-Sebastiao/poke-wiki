@@ -1,19 +1,19 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { getPokemonById, updatePokemon } from '@/lib/pokemonService';
+import { getPokemonAction, updatePokemonAction } from '@/app/actions/pokemonActions';
 import { useRouter, useParams } from 'next/navigation';
 import { Save, ArrowLeft, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import TagSelector, { POKEMON_TAGS } from '@/components/TagSelector';
-import { fetchPokemonFromPokeAPI } from '@/lib/pokeapi';
+import { fetchPokemonFromPokeAPIAction } from '@/app/actions/dataActions';
 
 export default function EditarPokemonPage() {
   const router = useRouter();
   const params = useParams();
   const pokemonId = params.id as string;
-  const { user, loading: authLoading } = useAuth();
+  const { role, session, loading: authLoading } = useAuth();
   
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -29,16 +29,18 @@ export default function EditarPokemonPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && role !== 'admin' && role !== 'superadmin') {
       router.push('/login');
     }
-  }, [user, authLoading, router]);
+  }, [role, authLoading, router]);
 
   useEffect(() => {
-    if (user && pokemonId) {
+    if (session?.access_token && pokemonId && (role === 'admin' || role === 'superadmin')) {
       const loadData = async () => {
         try {
-          const pokemon = await getPokemonById(pokemonId);
+          const result = await getPokemonAction(session.access_token, pokemonId);
+          if (!result.success || !result.data) throw new Error(result.message);
+          const pokemon = result.data;
           setFormData({
             name: pokemon.name,
             type: pokemon.type ? pokemon.type.split(',').map((t: string) => t.trim()).filter((t: string) => t) : [],
@@ -46,7 +48,7 @@ export default function EditarPokemonPage() {
             weaknesses: pokemon.weaknesses || [],
             image_url: pokemon.image_url || ''
           });
-        } catch (err) {
+        } catch {
           setError('Não foi possível carregar os dados do Pokémon.');
         } finally {
           setFetching(false);
@@ -54,9 +56,9 @@ export default function EditarPokemonPage() {
       };
       loadData();
     }
-  }, [user, pokemonId]);
+  }, [session?.access_token, role, pokemonId]);
 
-  if (authLoading || !user || fetching) {
+  if (authLoading || (role !== 'admin' && role !== 'superadmin') || fetching) {
     return <div className="p-8 text-center text-slate-500">Carregando...</div>;
   }
 
@@ -76,11 +78,12 @@ export default function EditarPokemonPage() {
         weaknesses: formData.weaknesses,
       };
       
-      await updatePokemon(pokemonId, pokemonData);
+      const result = await updatePokemonAction(session?.access_token ?? '', pokemonId, pokemonData);
+      if (!result.success) throw new Error(result.message);
       router.push('/admin');
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || 'Erro ao atualizar pokémon.');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Erro ao atualizar pokémon.');
     } finally {
       setLoading(false);
     }
@@ -96,7 +99,7 @@ export default function EditarPokemonPage() {
     setError('');
     
     try {
-      const data = await fetchPokemonFromPokeAPI(formData.name);
+      const data = await fetchPokemonFromPokeAPIAction(formData.name);
       setFormData(prev => ({
         ...prev,
         name: data.name,
@@ -105,8 +108,8 @@ export default function EditarPokemonPage() {
         weaknesses: data.weaknesses,
         image_url: data.image_url || prev.image_url
       }));
-    } catch (err: any) {
-      setError(err.message || 'Erro ao buscar na PokéAPI.');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Erro ao buscar na PokéAPI.');
     } finally {
       setIsFetchingAPI(false);
     }

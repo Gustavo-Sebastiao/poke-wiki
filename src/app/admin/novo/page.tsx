@@ -1,19 +1,19 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { createPokemon } from '@/lib/pokemonService';
+import { createPokemonAction } from '@/app/actions/pokemonActions';
 import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import TagSelector, { POKEMON_TAGS } from '@/components/TagSelector';
-import { fetchPokemonFromPokeAPI } from '@/lib/pokeapi';
+import { fetchPokemonFromPokeAPIAction } from '@/app/actions/dataActions';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
 
 export default function NovoPokemonPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { role, session, loading: authLoading } = useAuth();
   const { language } = useLanguage();
   const t = translations[language].adminPokemon;
   const [loading, setLoading] = useState(false);
@@ -29,12 +29,12 @@ export default function NovoPokemonPage() {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && role !== 'admin' && role !== 'superadmin') {
       router.push('/login');
     }
-  }, [user, authLoading, router]);
+  }, [role, authLoading, router]);
 
-  if (authLoading || !user) {
+  if (authLoading || (role !== 'admin' && role !== 'superadmin')) {
     return <div className="p-8 text-center text-slate-500">Carregando...</div>;
   }
   
@@ -56,11 +56,12 @@ export default function NovoPokemonPage() {
         weaknesses: formData.weaknesses,
       };
       
-      await createPokemon(pokemonData);
+      const result = await createPokemonAction(session?.access_token ?? '', pokemonData);
+      if (!result.success) throw new Error(result.message);
       router.push('/admin');
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || t.errorCreate);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t.errorCreate);
     } finally {
       setLoading(false);
     }
@@ -76,7 +77,7 @@ export default function NovoPokemonPage() {
     setError('');
     
     try {
-      const data = await fetchPokemonFromPokeAPI(formData.name);
+      const data = await fetchPokemonFromPokeAPIAction(formData.name);
       setFormData(prev => ({
         ...prev,
         name: data.name,
@@ -85,8 +86,8 @@ export default function NovoPokemonPage() {
         weaknesses: data.weaknesses,
         image_url: data.image_url || prev.image_url
       }));
-    } catch (err: any) {
-      setError(err.message || t.errorPokeApi);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t.errorPokeApi);
     } finally {
       setIsFetchingAPI(false);
     }

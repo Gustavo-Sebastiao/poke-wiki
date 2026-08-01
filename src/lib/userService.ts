@@ -1,4 +1,6 @@
-import { supabase } from './supabase';
+import 'server-only';
+
+import { supabaseAdmin } from './supabaseAdmin';
 
 export interface Profile {
   id: string;
@@ -9,7 +11,7 @@ export interface Profile {
 
 // Buscar todos os perfis (apenas se tiver permissão, RLS deve estar desabilitado ou permitir para superadmin)
 export async function getProfiles() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false });
@@ -24,7 +26,7 @@ export async function getProfiles() {
 
 // Atualizar o cargo de um usuário
 export async function updateUserRole(id: string, role: 'user' | 'admin' | 'superadmin') {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('profiles')
     .update({ role })
     .eq('id', id)

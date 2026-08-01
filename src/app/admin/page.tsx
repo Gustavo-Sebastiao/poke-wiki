@@ -1,45 +1,47 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getPokemons, deletePokemon, Pokemon } from "@/lib/pokemonService";
+import type { Pokemon } from "@/lib/pokemonService";
+import { deletePokemonAction, getAdminPokemonsAction } from "@/app/actions/pokemonActions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
 export default function AdminDashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { role, session, loading: authLoading } = useAuth();
   const router = useRouter();
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && role !== 'admin' && role !== 'superadmin') {
       router.push("/login");
     }
-  }, [user, authLoading, router]);
+  }, [role, authLoading, router]);
 
   useEffect(() => {
-    if (user) {
+    if (session?.access_token && (role === 'admin' || role === 'superadmin')) {
+      const fetchPokemons = async () => {
+        try {
+          const result = await getAdminPokemonsAction(session.access_token);
+          if (!result.success) throw new Error(result.message);
+          setPokemons(result.data ?? []);
+        } catch (error) {
+          console.error("Erro ao carregar pokémons", error);
+        } finally {
+          setLoading(false);
+        }
+      };
       fetchPokemons();
     }
-  }, [user]);
-
-  const fetchPokemons = async () => {
-    try {
-      const data = await getPokemons();
-      setPokemons(data);
-    } catch (error) {
-      console.error("Erro ao carregar pokémons", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [session?.access_token, role]);
 
   const handleDelete = async (id: string) => {
     if (confirm("Tem certeza que deseja excluir este Pokémon?")) {
       try {
-        await deletePokemon(id);
+        const result = await deletePokemonAction(session!.access_token, id);
+        if (!result.success) throw new Error(result.message);
         setPokemons(pokemons.filter((p) => p.id !== id));
       } catch (error) {
         console.error("Erro ao excluir", error);
@@ -48,7 +50,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  if (authLoading || !user) {
+  if (authLoading || (role !== 'admin' && role !== 'superadmin')) {
     return <div className="p-8 text-center text-slate-500">Carregando...</div>;
   }
 

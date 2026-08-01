@@ -5,7 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PokemonCard from '@/components/PokemonCard';
 import PokemonModal from '@/components/PokemonModal';
 import { Search, ChevronLeft, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
-import { Pokemon } from '@/lib/pokemonService';
+import type { Pokemon } from '@/lib/pokemonService';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
 import Image from 'next/image';

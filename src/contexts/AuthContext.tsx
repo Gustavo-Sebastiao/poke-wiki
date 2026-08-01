@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getCurrentRoleAction } from "@/app/actions/userActions";
 import { User, Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
@@ -28,21 +29,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const fetchRole = async (userId: string) => {
+  const fetchRole = async (accessToken: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single();
-        
-      if (!error && data) {
-        setRole(data.role);
+      const result = await getCurrentRoleAction(accessToken);
+
+      if (result.success && result.data) {
+        setRole(result.data);
       } else {
-        setRole('user (Erro: ' + (error?.message || 'Sem dados') + ')'); // fallback com erro visível
+        setRole('user');
       }
-    } catch (e: any) {
-      setRole('user (Exceção: ' + e.message + ')');
+    } catch {
+      setRole('user');
     }
   };
 
@@ -53,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchRole(session.user.id);
+        await fetchRole(session.access_token);
       }
       
       setLoading(false);
@@ -67,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await fetchRole(session.user.id);
+          await fetchRole(session.access_token);
         } else {
           setRole(null);
         }

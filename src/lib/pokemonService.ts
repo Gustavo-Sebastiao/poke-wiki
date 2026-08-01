@@ -1,4 +1,6 @@
-import { supabase } from './supabase';
+import 'server-only';
+
+import { supabaseAdmin } from './supabaseAdmin';
 
 export interface Pokemon {
   id?: string;
@@ -17,7 +19,7 @@ export async function getPokemons(type?: string) {
   const limit = 1000;
   
   while (true) {
-    let query = supabase
+    let query = supabaseAdmin
       .from('pokemons')
       .select('*')
       .order('created_at', { ascending: false })
@@ -48,7 +50,7 @@ export async function getPokemons(type?: string) {
 
 // Criar um novo Pokémon (Admin)
 export async function createPokemon(pokemon: Pokemon) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('pokemons')
     .insert([pokemon])
     .select()
@@ -64,7 +66,7 @@ export async function createPokemon(pokemon: Pokemon) {
 
 // Buscar um Pokémon específico por ID
 export async function getPokemonById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('pokemons')
     .select('*')
     .eq('id', id)
@@ -80,7 +82,7 @@ export async function getPokemonById(id: string) {
 
 // Atualizar um Pokémon existente
 export async function updatePokemon(id: string, pokemon: Partial<Pokemon>) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('pokemons')
     .update(pokemon)
     .eq('id', id)
@@ -97,7 +99,7 @@ export async function updatePokemon(id: string, pokemon: Partial<Pokemon>) {
 
 // Excluir um Pokémon existente (Admin)
 export async function deletePokemon(id: string) {
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('pokemons')
     .delete()
     .eq('id', id);

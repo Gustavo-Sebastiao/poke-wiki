@@ -1,29 +1,64 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getAuthenticatedUser, requireRole, type Role } from "@/lib/server/authorization";
+import { getProfiles, type Profile, updateUserRole } from "@/lib/userService";
 import { revalidatePath } from "next/cache";
 
-// Tipo auxiliar
-type ActionResponse = {
+type ActionResponse<T = undefined> = {
   success: boolean;
+  data?: T;
   message?: string;
 };
 
-/**
- * Cria um novo usuário no Auth do Supabase.
- * O trigger que criamos no BD vai inserir na tabela profiles automaticamente,
- * mas precisaremos garantir a role se for admin (mas por padrão criará como user, e você promove depois).
- */
+export async function getCurrentRoleAction(accessToken: string): Promise<ActionResponse<Role>> {
+  try {
+    const { role } = await getAuthenticatedUser(accessToken);
+    return { success: true, data: role };
+  } catch (error) {
+    return { success: false, message: getErrorMessage(error) };
+  }
+}
+
+export async function getProfilesAction(accessToken: string): Promise<ActionResponse<Profile[]>> {
+  try {
+    await requireRole(accessToken, ["superadmin"]);
+    return { success: true, data: await getProfiles() };
+  } catch (error) {
+    return { success: false, message: getErrorMessage(error) };
+  }
+}
+
+export async function updateUserRoleAction(
+  accessToken: string,
+  userId: string,
+  role: Exclude<Role, "superadmin">,
+): Promise<ActionResponse> {
+  try {
+    await requireRole(accessToken, ["superadmin"]);
+    if (role !== "user" && role !== "admin") {
+      throw new Error("Cargo inválido.");
+    }
+    await updateUserRole(userId, role);
+    revalidatePath("/admin/usuarios");
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: getErrorMessage(error) };
+  }
+}
+
 export async function createUserAction(
+  accessToken: string,
   email: string,
   password: string,
   name: string
 ): Promise<ActionResponse> {
   try {
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    await requireRole(accessToken, ["superadmin"]);
+    const { error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Auto-confirma o email
+      email_confirm: true,
       user_metadata: { full_name: name },
     });
 
@@ -31,25 +66,24 @@ export async function createUserAction(
 
     revalidatePath("/admin/usuarios");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, message: error.message || "Erro ao criar usuário" };
+  } catch (error) {
+    return { success: false, message: getErrorMessage(error) };
   }
 }
 
-/**
- * Atualiza senha e/ou nome de um usuário existente.
- */
 export async function updateUserAction(
+  accessToken: string,
   userId: string,
   password?: string,
   name?: string
 ): Promise<ActionResponse> {
   try {
-    const updates: any = {};
+    await requireRole(accessToken, ["superadmin"]);
+    const updates: { password?: string; user_metadata?: { full_name: string } } = {};
     if (password && password.length >= 6) updates.password = password;
     if (name) updates.user_metadata = { full_name: name };
 
-    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
       updates
     );
@@ -58,24 +92,29 @@ export async function updateUserAction(
 
     revalidatePath("/admin/usuarios");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, message: error.message || "Erro ao atualizar usuário" };
+  } catch (error) {
+    return { success: false, message: getErrorMessage(error) };
   }
 }
 
-/**
- * Exclui um usuário do Supabase Auth
- * A constraint "on delete cascade" na tabela profiles vai apagar o perfil associado.
- */
-export async function deleteUserAction(userId: string): Promise<ActionResponse> {
+export async function deleteUserAction(accessToken: string, userId: string): Promise<ActionResponse> {
   try {
-    const { data, error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    const currentUser = await requireRole(accessToken, ["superadmin"]);
+    if (currentUser.id === userId) {
+      throw new Error("Você não pode excluir a própria conta.");
+    }
+
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     
     if (error) throw error;
 
     revalidatePath("/admin/usuarios");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, message: error.message || "Erro ao excluir usuário" };
+  } catch (error) {
+    return { success: false, message: getErrorMessage(error) };
   }
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Erro interno.";
 }
