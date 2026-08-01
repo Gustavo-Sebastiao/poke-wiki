@@ -1,3 +1,5 @@
+import 'server-only';
+
 const TYPE_MAP: Record<string, string> = {
   normal: 'Normal',
   fire: 'Fogo',

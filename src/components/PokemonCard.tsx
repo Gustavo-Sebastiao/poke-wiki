@@ -5,7 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Edit2, Trash2 } from 'lucide-react';
-import { Pokemon, deletePokemon } from '@/lib/pokemonService';
+import type { Pokemon } from '@/lib/pokemonService';
+import { deletePokemonAction } from '@/app/actions/pokemonActions';
 import { useAuth } from '@/contexts/AuthContext';
 import { tagImages } from '@/components/TagSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,11 +21,11 @@ export default function PokemonCard({
   pokemon: Pokemon;
   onSelect?: (pokemon: Pokemon) => void;
 }) {
-  const { role } = useAuth();
+  const { role, session } = useAuth();
   const isAdmin = role === 'admin' || role === 'superadmin';
   const router = useRouter();
   const { language } = useLanguage();
-  const tTypes = translations[language].pokemonTypes as any;
+  const tTypes = translations[language].pokemonTypes as Record<string, string>;
   const [isDeleting, setIsDeleting] = useState(false);
   
   const { translatedText: translatedDescription, loading: isTranslating } = useDynamicTranslation(pokemon.description || '');
@@ -39,7 +40,8 @@ export default function PokemonCard({
     if (confirm(`Tem certeza que deseja excluir o ${pokemon.name}?`)) {
       setIsDeleting(true);
       try {
-        await deletePokemon(pokemon.id!);
+        const result = await deletePokemonAction(session?.access_token ?? '', pokemon.id!);
+        if (!result.success) throw new Error(result.message);
         router.refresh();
       } catch (error) {
         console.error("Erro ao deletar", error);

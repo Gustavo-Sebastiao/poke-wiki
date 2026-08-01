@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, Star } from 'lucide-react';
 import { tagImages } from '@/components/TagSelector';
-import { Pokemon } from '@/lib/pokemonService';
+import type { Pokemon } from '@/lib/pokemonService';
+import { getPokemonDetailsAction } from '@/app/actions/dataActions';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPokemonName, translateHabitat, translateStat } from '@/lib/formatters';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
@@ -24,17 +25,6 @@ interface PokeApiSpecies {
   evolution_chain: { url: string } | null;
 }
 
-const GENERATION_NAMES: Record<string, string> = {
-  'generation-i': '1ª Geração',
-  'generation-ii': '2ª Geração',
-  'generation-iii': '3ª Geração',
-  'generation-iv': '4ª Geração',
-  'generation-v': '5ª Geração',
-  'generation-vi': '6ª Geração',
-  'generation-vii': '7ª Geração',
-  'generation-viii': '8ª Geração',
-  'generation-ix': '9ª Geração'
-};
 interface PokemonModalProps {
   pokemon: Pokemon;
   onClose: () => void;
@@ -42,8 +32,8 @@ interface PokemonModalProps {
 
 export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
   const { language } = useLanguage();
-  const tTypes = translations[language].pokemonTypes as any;
-  const tGensShort = translations[language].pokemonGenerationsShort as any;
+  const tTypes = translations[language].pokemonTypes as Record<string, string>;
+  const tGensShort = translations[language].pokemonGenerationsShort as Record<string, string>;
   const [apiData, setApiData] = useState<PokeApiData | null>(null);
   const [speciesData, setSpeciesData] = useState<PokeApiSpecies | null>(null);
   const [isShiny, setIsShiny] = useState(false);
@@ -65,113 +55,11 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
     const fetchApiData = async () => {
       setLoading(true);
       try {
-        let fetchIdentifier = pokemon.name.toLowerCase().replace(/\s+/g, '-');
-        if (pokemon.image_url) {
-          const matches = pokemon.image_url.match(/\/(\d+)\.(png|jpg|jpeg|gif)$/i);
-          if (matches && matches[1]) {
-            fetchIdentifier = matches[1];
-          }
-        }
-        
-        const pokemonRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${fetchIdentifier}`);
-        if (pokemonRes.ok) {
-          const pData = await pokemonRes.json();
-          setApiData(pData);
-          
-          if (pData.species?.url) {
-            const speciesRes = await fetch(pData.species.url);
-            if (speciesRes.ok) {
-              const sData = await speciesRes.json();
-              setSpeciesData(sData);
-
-              if (sData.varieties) {
-                const megas = sData.varieties
-                  .filter((v: any) => v.pokemon.name.includes('-mega') || v.pokemon.name.includes('-primal'))
-                  .map((v: any) => {
-                    const url = v.pokemon.url;
-                    const matches = url.match(/\/(\d+)\/$/);
-                    const id = matches ? matches[1] : null;
-                    return {
-                      name: v.pokemon.name,
-                      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`
-                    };
-                  });
-                setMegaEvolutions(megas);
-              }
-
-              if (sData.evolution_chain?.url) {
-                try {
-                  const evoRes = await fetch(sData.evolution_chain.url);
-                  if (evoRes.ok) {
-                    const evoData = await evoRes.json();
-                    const chain = evoData.chain;
-                    
-                    const pName = pokemon.name.toLowerCase().replace(/\s+/g, '-');
-                    const sName = sData.name.toLowerCase();
-
-                    function buildPaths(node: any, currentPath: string[]): string[][] {
-                      if (!node.evolves_to || node.evolves_to.length === 0) {
-                        return [currentPath];
-                      }
-                      let paths: string[][] = [];
-                      for (const child of node.evolves_to) {
-                        const details = child.evolution_details.length > 0 ? child.evolution_details : [{}];
-                        for (const detail of details) {
-                          const baseForm = detail.base_form?.name || node.species.name;
-                          const evolvedForm = detail.evolved_form?.name || child.species.name;
-                          
-                          const newPath = [...currentPath];
-                          newPath[newPath.length - 1] = baseForm;
-                          newPath.push(evolvedForm);
-                          
-                          paths.push(...buildPaths(child, newPath));
-                        }
-                      }
-                      return paths;
-                    }
-
-                    const allPaths = buildPaths(chain, [chain.species.name]);
-                    let matchingPaths = allPaths.filter((p: string[]) => p.includes(pName));
-                    
-                    if (matchingPaths.length === 0) {
-                      matchingPaths = allPaths.filter((p: string[]) => p.includes(sName));
-                      
-                      const isMegaOrPrimal = pokemon.name.toLowerCase().includes('mega') || pokemon.name.toLowerCase().includes('primal');
-                      if (!isMegaOrPrimal) {
-                        matchingPaths = matchingPaths.map((p: string[]) => p.map((f: string) => f === sName ? pName : f));
-                      }
-                    }
-
-                    const finalSet = new Set();
-                    for (const p of matchingPaths) {
-                      for (const f of p) {
-                        finalSet.add(f);
-                      }
-                    }
-
-                    const evos = [];
-                    for (const form of Array.from(finalSet)) {
-                      try {
-                        const pRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${form}`);
-                        if (pRes.ok) {
-                          const pData = await pRes.json();
-                          evos.push({
-                            name: pData.name.replace(/-/g, ' '),
-                            imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pData.id}.png`
-                          });
-                        }
-                      } catch(e) {}
-                    }
-
-                    setEvolutions(evos);
-                  }
-                } catch (e) {
-                  console.error("Erro ao buscar evoluções:", e);
-                }
-              }
-            }
-          }
-        }
+        const details = await getPokemonDetailsAction(pokemon.name, pokemon.image_url);
+        setApiData(details.apiData);
+        setSpeciesData(details.speciesData);
+        setEvolutions(details.evolutions);
+        setMegaEvolutions(details.megaEvolutions);
       } catch (error) {
         console.error("Erro ao buscar dados adicionais na PokeAPI:", error);
       } finally {
@@ -180,7 +68,7 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
     };
 
     fetchApiData();
-  }, [pokemon.name]);
+  }, [pokemon.name, pokemon.image_url]);
 
   const baseImageUrl = pokemon.image_url || 'https://via.placeholder.com/400?text=Sem+Imagem';
   const imageUrl = isShiny ? baseImageUrl.replace('official-artwork/', 'official-artwork/shiny/') : baseImageUrl;

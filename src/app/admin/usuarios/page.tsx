@@ -1,17 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getProfiles, updateUserRole, Profile } from "@/lib/userService";
+import type { Profile } from "@/lib/userService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Shield, ShieldAlert, User as UserIcon, Plus, Trash2, Edit } from "lucide-react";
-import { createUserAction, updateUserAction, deleteUserAction } from "@/app/actions/userActions";
+import {
+  createUserAction,
+  deleteUserAction,
+  getProfilesAction,
+  updateUserAction,
+  updateUserRoleAction,
+} from "@/app/actions/userActions";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
 
 export default function GerenciarUsuariosPage() {
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, role, session, loading: authLoading } = useAuth();
   const router = useRouter();
   const { language } = useLanguage();
   const t = translations[language].adminUsers;
@@ -38,16 +44,29 @@ export default function GerenciarUsuariosPage() {
   }, [role, authLoading, router]);
 
   useEffect(() => {
-    if (role === 'superadmin') {
-      fetchData();
+    if (role === 'superadmin' && session?.access_token) {
+      const loadProfiles = async () => {
+        try {
+          setLoading(true);
+          const result = await getProfilesAction(session.access_token);
+          if (!result.success) throw new Error(result.message);
+          setProfiles(result.data ?? []);
+        } catch (error) {
+          console.error("Erro ao carregar perfis", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadProfiles();
     }
-  }, [role]);
+  }, [role, session?.access_token]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await getProfiles();
-      setProfiles(data);
+      const result = await getProfilesAction(session?.access_token ?? '');
+      if (!result.success) throw new Error(result.message);
+      setProfiles(result.data ?? []);
     } catch (error) {
       console.error("Erro ao carregar perfis", error);
     } finally {
@@ -61,7 +80,8 @@ export default function GerenciarUsuariosPage() {
     
     if (confirm(`Tem certeza que deseja ${actionText} esta conta?`)) {
       try {
-        await updateUserRole(id, newRole);
+        const result = await updateUserRoleAction(session?.access_token ?? '', id, newRole);
+        if (!result.success) throw new Error(result.message);
         setProfiles(profiles.map(p => p.id === id ? { ...p, role: newRole } : p));
       } catch (error) {
         console.error("Erro ao atualizar cargo", error);
@@ -73,7 +93,7 @@ export default function GerenciarUsuariosPage() {
   const handleDelete = async (id: string) => {
     if (confirm("Tem certeza que deseja excluir esta conta PERMANENTEMENTE? Esta ação não pode ser desfeita.")) {
       try {
-        const res = await deleteUserAction(id);
+        const res = await deleteUserAction(session?.access_token ?? '', id);
         if (res.success) {
           setProfiles(profiles.filter(p => p.id !== id));
         } else {
@@ -91,7 +111,12 @@ export default function GerenciarUsuariosPage() {
     setFormLoading(true);
     setFormError("");
 
-    const res = await createUserAction(formEmail, formPassword, formName);
+    const res = await createUserAction(
+      session?.access_token ?? '',
+      formEmail,
+      formPassword,
+      formName,
+    );
     
     if (res.success) {
       setIsCreateModalOpen(false);
@@ -109,7 +134,12 @@ export default function GerenciarUsuariosPage() {
     setFormLoading(true);
     setFormError("");
 
-    const res = await updateUserAction(selectedProfile.id, formPassword, formName);
+    const res = await updateUserAction(
+      session?.access_token ?? '',
+      selectedProfile.id,
+      formPassword,
+      formName,
+    );
     
     if (res.success) {
       setIsEditModalOpen(false);

@@ -1,6 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+import { supabase } from './supabaseAdmin.mjs';
 
 async function check() {
   const { data, error } = await supabase.from('pokemons').select('id, name, description');
