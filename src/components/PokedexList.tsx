@@ -286,10 +286,33 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   
   const selectedPokemon = useMemo(() => {
     if (selectedPokemonId) {
-      return initialPokemons.find(p => String(p.id) === selectedPokemonId) || null;
+      const found = initialPokemons.find(p => String(p.id) === selectedPokemonId || getPokemonIdFromUrl(p.image_url) === Number(selectedPokemonId));
+      if (found) return found;
+
+      return {
+        id: selectedPokemonId,
+        name: `Pokemon #${selectedPokemonId}`,
+        description: '',
+        type: '',
+        weaknesses: [],
+        image_url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${selectedPokemonId}.png`
+      };
     }
     if (selectedPokemonName) {
-      return initialPokemons.find(p => p.name.toLowerCase() === selectedPokemonName.toLowerCase()) || null;
+      const normalizedQuery = selectedPokemonName.toLowerCase().replace(/\s+/g, '-');
+      const found = initialPokemons.find(p => 
+        p.name.toLowerCase() === selectedPokemonName.toLowerCase() ||
+        p.name.toLowerCase().replace(/\s+/g, '-') === normalizedQuery
+      );
+      if (found) return found;
+
+      return {
+        name: selectedPokemonName,
+        description: '',
+        type: '',
+        weaknesses: [],
+        image_url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${selectedPokemonName}.png`
+      };
     }
     return null;
   }, [selectedPokemonId, selectedPokemonName, initialPokemons]);
@@ -297,8 +320,30 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   const handleSelectPokemon = (pokemon: Pokemon) => {
     // Adiciona o parametro pokemon na URL sem recarregar a pagina
     const params = new URLSearchParams(searchParams.toString());
-    params.set('pokemon', pokemon.id!);
-    params.delete('pokemonName');
+    const pokeApiId = getPokemonIdFromUrl(pokemon.image_url);
+    if (pokemon.id) {
+      params.set('pokemon', String(pokemon.id));
+      params.delete('pokemonName');
+    } else if (pokeApiId) {
+      params.set('pokemon', String(pokeApiId));
+      params.delete('pokemonName');
+    } else {
+      params.set('pokemonName', pokemon.name.toLowerCase().replace(/\s+/g, '-'));
+      params.delete('pokemon');
+    }
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleSelectPokemonTarget = (target: { name: string; imageUrl?: string }) => {
+    const idMatch = target.imageUrl?.match(/\/(\d+)\.(png|jpg|jpeg|gif)$/i)?.[1];
+    const params = new URLSearchParams(searchParams.toString());
+    if (idMatch) {
+      params.set('pokemon', idMatch);
+      params.delete('pokemonName');
+    } else {
+      params.set('pokemonName', target.name.toLowerCase().replace(/\s+/g, '-'));
+      params.delete('pokemon');
+    }
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
@@ -317,7 +362,11 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   return (
     <>
       {selectedPokemon && (
-        <PokemonModal pokemon={selectedPokemon} onClose={handleCloseModal} />
+        <PokemonModal 
+          pokemon={selectedPokemon} 
+          onClose={handleCloseModal} 
+          onSelectPokemon={handleSelectPokemonTarget}
+        />
       )}
       
       {/* Desktop Search Bar */}

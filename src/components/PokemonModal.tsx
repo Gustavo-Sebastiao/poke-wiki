@@ -16,6 +16,7 @@ interface PokeApiData {
   weight: number;
   abilities: { ability: { name: string }; is_hidden: boolean }[];
   stats: { base_stat: number; stat: { name: string } }[];
+  types?: { type: { name: string } }[];
 }
 
 interface PokeApiSpecies {
@@ -28,9 +29,18 @@ interface PokeApiSpecies {
 interface PokemonModalProps {
   pokemon: Pokemon;
   onClose: () => void;
+  onSelectPokemon?: (target: { name: string; imageUrl?: string }) => void;
 }
 
-export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
+const POKEAPI_TYPE_TO_TAG: Record<string, string> = {
+  fire: 'Fogo', water: 'Água', electric: 'Elétrico', steel: 'Aço',
+  fighting: 'Luta', psychic: 'Psíquico', dark: 'Escuridão', normal: 'Normal',
+  dragon: 'Dragão', fairy: 'Fada', ice: 'Gelo', grass: 'Planta',
+  poison: 'Venenoso', ground: 'Terra', flying: 'Voador', bug: 'Inseto',
+  rock: 'Rocha', ghost: 'Fantasma'
+};
+
+export default function PokemonModal({ pokemon, onClose, onSelectPokemon }: PokemonModalProps) {
   const { language } = useLanguage();
   const tTypes = translations[language].pokemonTypes as Record<string, string>;
   const tGensShort = translations[language].pokemonGenerationsShort as Record<string, string>;
@@ -176,8 +186,10 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
                 </h1>
                 
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {pokemon.type && pokemon.type.split(',').map((t, i) => {
-                    const tag = t.trim();
+                  {((pokemon.type && pokemon.type.trim()) 
+                    ? pokemon.type.split(',').map(t => t.trim())
+                    : (apiData?.types?.map(t => POKEAPI_TYPE_TO_TAG[t.type.name] || t.type.name) || [])
+                  ).map((tag, i) => {
                     const img = tagImages[tag];
                     return (
                       <div key={i} className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700" title={tTypes[tag] || tag}>
@@ -204,16 +216,30 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
                   <div className="mt-4 mb-2">
                     <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">{language === 'pt' ? 'Evoluções' : 'Evolutions'}</h4>
                     <div className="flex flex-wrap items-center gap-3">
-                      {evolutions.map((evo, idx) => (
-                        <div 
-                          key={idx} 
-                          className={`relative w-14 h-14 rounded-full shadow-sm border-2 flex items-center justify-center p-1 bg-white dark:bg-slate-900 ${evo.name.toLowerCase() === pokemon.name.toLowerCase().replace(/\s+/g, '-') ? 'border-[#59F7E2] ring-2 ring-[#59F7E2]/30' : 'border-slate-200 dark:border-slate-700'}`}
-                          title={formatPokemonName(evo.name, language)}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={evo.imageUrl} alt={evo.name} className="object-contain w-full h-full drop-shadow-sm" />
-                        </div>
-                      ))}
+                      {evolutions.map((evo, idx) => {
+                        const currentSlug = pokemon.name.toLowerCase().replace(/\s+/g, '-');
+                        const evoSlug = evo.name.toLowerCase().replace(/\s+/g, '-');
+                        const isCurrent = currentSlug === evoSlug;
+                        return (
+                          <div 
+                            key={idx} 
+                            onClick={() => {
+                              if (!isCurrent && onSelectPokemon) {
+                                onSelectPokemon(evo);
+                              }
+                            }}
+                            className={`relative w-14 h-14 rounded-full shadow-sm border-2 flex items-center justify-center p-1 bg-white dark:bg-slate-900 transition-all ${
+                              isCurrent 
+                                ? 'border-[#59F7E2] ring-2 ring-[#59F7E2]/30 cursor-default' 
+                                : 'border-slate-200 dark:border-slate-700 hover:border-[#59F7E2] dark:hover:border-[#59F7E2] hover:scale-110 cursor-pointer'
+                            }`}
+                            title={formatPokemonName(evo.name, language)}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={evo.imageUrl} alt={evo.name} className="object-contain w-full h-full drop-shadow-sm" />
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -222,16 +248,30 @@ export default function PokemonModal({ pokemon, onClose }: PokemonModalProps) {
                   <div className="mt-4 mb-2">
                     <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">{language === 'pt' ? 'Mega Evoluções' : 'Mega Evolutions'}</h4>
                     <div className="flex flex-wrap items-center gap-3">
-                      {megaEvolutions.map((mega, idx) => (
-                        <div 
-                          key={idx} 
-                          className="relative w-16 h-16 rounded-full shadow-sm border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 bg-white dark:bg-slate-900 hover:border-amber-400 dark:hover:border-amber-500 hover:ring-2 hover:ring-amber-400/30 transition-all cursor-pointer"
-                          title={formatPokemonName(mega.name, language)}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={mega.imageUrl} alt={mega.name} className="object-contain w-full h-full drop-shadow-sm" />
-                        </div>
-                      ))}
+                      {megaEvolutions.map((mega, idx) => {
+                        const currentSlug = pokemon.name.toLowerCase().replace(/\s+/g, '-');
+                        const megaSlug = mega.name.toLowerCase().replace(/\s+/g, '-');
+                        const isCurrent = currentSlug === megaSlug;
+                        return (
+                          <div 
+                            key={idx} 
+                            onClick={() => {
+                              if (!isCurrent && onSelectPokemon) {
+                                onSelectPokemon(mega);
+                              }
+                            }}
+                            className={`relative w-16 h-16 rounded-full shadow-sm border-2 flex items-center justify-center p-1 bg-white dark:bg-slate-900 transition-all ${
+                              isCurrent
+                                ? 'border-amber-400 ring-2 ring-amber-400/30 cursor-default'
+                                : 'border-slate-200 dark:border-slate-700 hover:border-amber-400 dark:hover:border-amber-500 hover:ring-2 hover:ring-amber-400/30 hover:scale-110 cursor-pointer'
+                            }`}
+                            title={formatPokemonName(mega.name, language)}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={mega.imageUrl} alt={mega.name} className="object-contain w-full h-full drop-shadow-sm" />
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
