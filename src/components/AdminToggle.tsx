@@ -61,15 +61,6 @@ export default function AdminToggle({ direction = 'down', onNavigate }: AdminTog
             </div>
             
             <div className="p-2 flex flex-col gap-1">
-              <Link 
-                href="/admin" 
-                onClick={() => handleItemClick()}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors"
-              >
-                <UserCircle className="w-4 h-4" />
-                {t.dashboard}
-              </Link>
-              
               {(role === 'admin' || role === 'superadmin') && (
                 <Link 
                   href="/admin/novo" 

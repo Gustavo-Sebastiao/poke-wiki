@@ -74,7 +74,7 @@ export default function TagSelector({ options, selectedTags, onChange, limit }: 
   };
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-2.5 sm:gap-3 w-full">
       {options.map(tag => {
         const isSelected = selectedTags.includes(tag);
         const isAtLimit = limit ? selectedTags.length >= limit : false;
@@ -89,12 +89,12 @@ export default function TagSelector({ options, selectedTags, onChange, limit }: 
             onClick={() => toggleTag(tag)}
             disabled={isDisabled}
             title={tag}
-            className={`relative rounded-full transition-all duration-200 border-2 w-12 h-12 flex items-center justify-center overflow-hidden
+            className={`relative rounded-full transition-all duration-200 border-2 w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center overflow-hidden shrink-0
               ${isSelected 
-                ? 'border-[#59F7E2] bg-white shadow-md scale-110' 
+                ? 'border-[#59F7E2] bg-white dark:bg-slate-800 shadow-md scale-105' 
                 : isDisabled 
-                  ? 'border-transparent bg-slate-50 cursor-not-allowed opacity-40' 
-                  : 'border-transparent bg-white shadow-sm hover:border-slate-200 hover:bg-slate-50'
+                  ? 'border-transparent bg-slate-50 dark:bg-slate-900/40 cursor-not-allowed opacity-30' 
+                  : 'border-transparent bg-white dark:bg-slate-700/70 shadow-sm hover:border-slate-200 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
               }
             `}
           >
@@ -107,7 +107,7 @@ export default function TagSelector({ options, selectedTags, onChange, limit }: 
                 />
               </div>
             ) : (
-              <span className="text-[10px] font-bold uppercase">{tag}</span>
+              <span className="text-[10px] font-bold uppercase text-slate-700 dark:text-slate-200">{tag}</span>
             )}
           </button>
         );

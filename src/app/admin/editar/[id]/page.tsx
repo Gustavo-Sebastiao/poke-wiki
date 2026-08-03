@@ -116,33 +116,36 @@ export default function EditarPokemonPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 md:p-8">
-      <div className="mb-8">
-        <Link href="/admin" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors mb-4 bg-white px-4 py-2 rounded-2xl shadow-sm hover:shadow-soft">
+    <div className="max-w-2xl mx-auto px-4 pt-24 md:pt-28 pb-12">
+      <div className="mb-6 md:mb-8">
+        <Link 
+          href="/admin" 
+          className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors mb-4 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm hover:shadow-soft font-medium text-sm border border-slate-100 dark:border-slate-700"
+        >
           <ArrowLeft className="w-4 h-4" />
-          Voltar para o Painel
+          Voltar
         </Link>
-        <h1 className="text-3xl font-bold text-slate-800">Editar Pokémon</h1>
-        <p className="text-slate-500 mt-2">Atualize as informações do Pokémon.</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">Editar Pokémon</h1>
+        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1">Atualize as informações do Pokémon.</p>
       </div>
 
-      <div className="bg-white p-8 rounded-3xl shadow-soft">
+      <div className="bg-white dark:bg-slate-800 p-5 md:p-8 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700/60">
         {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-medium">
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-2xl text-sm font-medium border border-red-100 dark:border-red-800/50">
             {error}
           </div>
         )}
         
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <label htmlFor="name" className="text-sm font-medium text-slate-600">Nome</label>
+            <label htmlFor="name" className="text-sm font-semibold text-slate-700 dark:text-slate-200">Nome</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 id="name"
                 name="name"
                 required
-                className="flex-1 px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800"
+                className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-all text-slate-800 dark:text-slate-100"
                 value={formData.name}
                 onChange={handleChange}
               />
@@ -150,7 +153,7 @@ export default function EditarPokemonPage() {
                 type="button"
                 onClick={handleAutoFill}
                 disabled={isFetchingAPI || !formData.name}
-                className="px-4 py-3 bg-indigo-50 text-indigo-500 rounded-2xl hover:bg-indigo-100 hover:text-indigo-600 transition-colors font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors font-medium flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Auto-preencher dados da PokéAPI"
               >
                 {isFetchingAPI ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
@@ -159,7 +162,7 @@ export default function EditarPokemonPage() {
           </div>
             
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-600">Tipo (Máx. 2)</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Tipo (Máx. 2)</label>
             <TagSelector 
               options={POKEMON_TAGS}
               selectedTags={formData.type}
@@ -169,20 +172,20 @@ export default function EditarPokemonPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="image_url" className="text-sm font-medium text-slate-600">URL da Imagem</label>
+            <label htmlFor="image_url" className="text-sm font-semibold text-slate-700 dark:text-slate-200">URL da Imagem</label>
             <input
               type="url"
               id="image_url"
               name="image_url"
               placeholder="https://exemplo.com/imagem.png"
-              className="px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800"
+              className="px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-all text-slate-800 dark:text-slate-100"
               value={formData.image_url}
               onChange={handleChange}
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-600">Fraquezas</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Fraquezas</label>
             <TagSelector 
               options={POKEMON_TAGS}
               selectedTags={formData.weaknesses}
@@ -191,13 +194,13 @@ export default function EditarPokemonPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="description" className="text-sm font-medium text-slate-600">Descrição</label>
+            <label htmlFor="description" className="text-sm font-semibold text-slate-700 dark:text-slate-200">Descrição</label>
             <textarea
               id="description"
               name="description"
               required
               rows={4}
-              className="px-4 py-3 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-shadow shadow-inner text-slate-800 resize-none"
+              className="px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#59F7E2] transition-all text-slate-800 dark:text-slate-100 resize-none"
               value={formData.description}
               onChange={handleChange}
             />
@@ -206,12 +209,12 @@ export default function EditarPokemonPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 flex items-center justify-center gap-2 w-full py-4 bg-[#59F7E2] text-slate-800 font-bold rounded-2xl shadow-soft hover:shadow-soft-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1"
+            className="mt-4 flex items-center justify-center gap-2 w-full py-4 bg-[#59F7E2] text-slate-800 font-bold rounded-2xl shadow-soft hover:shadow-soft-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0"
           >
             {loading ? 'Salvando...' : (
               <>
                 <Save className="w-5 h-5" />
-                Atualizar Pokémon
+                Salvar Alterações
               </>
             )}
           </button>

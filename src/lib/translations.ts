@@ -158,7 +158,7 @@ export const translations = {
       onlyAdmins: "Só pessoas cadastradas por um admin podem efetuar login",
     },
     adminPokemon: {
-      back: "Voltar para o Painel",
+      back: "Voltar",
       title: "Cadastrar Pokémon",
       subtitle: "Adicione um novo Pokémon ao banco de dados da Pokewiki.",
       name: "Nome",

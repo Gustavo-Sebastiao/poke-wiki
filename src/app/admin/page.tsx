@@ -55,71 +55,113 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Painel de Controle</h1>
-          <p className="text-slate-500 mt-2">Gerencie os Pokémons cadastrados.</p>
+    <div className="max-w-4xl mx-auto px-4 pt-24 md:pt-28 pb-12 w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8 w-full">
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100">Painel de Controle</h1>
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1">Gerencie os Pokémons cadastrados.</p>
         </div>
         <Link 
           href="/admin/novo"
-          className="flex items-center gap-2 px-6 py-3 bg-[#59F7E2] text-slate-800 font-bold rounded-2xl shadow-soft hover:shadow-soft-hover transition-all hover:-translate-y-1"
+          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-[#59F7E2] text-slate-800 font-bold rounded-2xl shadow-soft hover:shadow-soft-hover transition-all hover:-translate-y-0.5 active:translate-y-0 w-full md:w-auto shrink-0"
         >
           <Plus className="w-5 h-5" />
           Anexar Pokémon
         </Link>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-soft overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-soft border border-slate-100 dark:border-slate-700/60 overflow-hidden w-full">
         {loading ? (
-          <div className="p-8 text-center text-slate-500">Carregando lista...</div>
+          <div className="p-8 text-center text-slate-500 dark:text-slate-400">Carregando lista...</div>
         ) : pokemons.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">Nenhum Pokémon cadastrado.</div>
+          <div className="p-8 text-center text-slate-500 dark:text-slate-400">Nenhum Pokémon cadastrado.</div>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="px-6 py-4 font-medium text-slate-500">Pokémon</th>
-                <th className="px-6 py-4 font-medium text-slate-500">Tipo</th>
-                <th className="px-6 py-4 font-medium text-slate-500 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Visualização em Cartões no Mobile */}
+            <div className="md:hidden flex flex-col divide-y divide-slate-100 dark:divide-slate-700/60 w-full overflow-hidden">
               {pokemons.map((pokemon) => (
-                <tr key={pokemon.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-semibold text-slate-800">
-                    <div className="flex items-center gap-3">
-                      {pokemon.image_url ? (
-                        <img src={pokemon.image_url} alt={pokemon.name} className="w-10 h-10 object-contain drop-shadow-sm" />
-                      ) : (
-                        <div className="w-10 h-10 bg-slate-200 rounded-full"></div>
-                      )}
-                      {pokemon.name}
+                <div key={pokemon.id} className="p-4 flex items-center justify-between gap-3 w-full overflow-hidden">
+                  <div className="flex items-center gap-3 min-w-0 flex-1 overflow-hidden">
+                    {pokemon.image_url ? (
+                      <img src={pokemon.image_url} alt={pokemon.name} className="w-12 h-12 object-contain drop-shadow-sm shrink-0" />
+                    ) : (
+                      <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-2xl shrink-0 flex items-center justify-center text-slate-400">
+                        ?
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <h3 className="font-bold text-slate-800 dark:text-slate-100 truncate min-w-0">{pokemon.name}</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate min-w-0">{pokemon.type}</p>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500">{pokemon.type}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-end gap-2">
-                      <Link 
-                        href={`/admin/editar/${pokemon.id}`}
-                        className="p-2 text-slate-400 hover:text-[#59F7E2] transition-colors rounded-xl hover:bg-[#59F7E2]/10"
-                        title="Editar"
-                      >
-                        <Edit className="w-5 h-5" />
-                      </Link>
-                      <button 
-                        onClick={() => pokemon.id && handleDelete(pokemon.id)}
-                        className="p-2 text-slate-400 hover:text-red-500 transition-colors rounded-xl hover:bg-red-50"
-                        title="Excluir"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Link 
+                      href={`/admin/editar/${pokemon.id}`}
+                      className="p-2.5 text-slate-400 dark:text-slate-400 hover:text-[#59F7E2] dark:hover:text-[#59F7E2] transition-colors rounded-xl hover:bg-[#59F7E2]/10"
+                      title="Editar"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </Link>
+                    <button 
+                      onClick={() => pokemon.id && handleDelete(pokemon.id)}
+                      className="p-2.5 text-slate-400 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            {/* Tabela Padrão no Desktop */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
+                    <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">Pokémon</th>
+                    <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">Tipo</th>
+                    <th className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pokemons.map((pokemon) => (
+                    <tr key={pokemon.id} className="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                      <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">
+                        <div className="flex items-center gap-3">
+                          {pokemon.image_url ? (
+                            <img src={pokemon.image_url} alt={pokemon.name} className="w-10 h-10 object-contain drop-shadow-sm" />
+                          ) : (
+                            <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+                          )}
+                          {pokemon.name}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{pokemon.type}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
+                          <Link 
+                            href={`/admin/editar/${pokemon.id}`}
+                            className="p-2 text-slate-400 dark:text-slate-400 hover:text-[#59F7E2] dark:hover:text-[#59F7E2] transition-colors rounded-xl hover:bg-[#59F7E2]/10"
+                            title="Editar"
+                          >
+                            <Edit className="w-5 h-5" />
+                          </Link>
+                          <button 
+                            onClick={() => pokemon.id && handleDelete(pokemon.id)}
+                            className="p-2 text-slate-400 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30"
+                            title="Excluir"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>
