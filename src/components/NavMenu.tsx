@@ -222,7 +222,7 @@ export default function NavMenu() {
           </div>
           
           <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-center">
-            <AdminToggle />
+            <AdminToggle direction="up" onNavigate={handleClose} />
           </div>
         </div>
       </div>
