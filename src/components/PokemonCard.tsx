@@ -27,7 +27,7 @@ export default function PokemonCard({
   return (
     <div 
       onClick={() => onSelect ? onSelect(pokemon) : router.push(`/pokemon/${pokemon.id}`)}
-      className="group relative flex flex-col bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500 hover:shadow-lg cursor-pointer transition-all duration-300"
+      className="group relative flex flex-col rounded-3xl border border-slate-100 bg-white p-4 transition-all duration-300 hover:border-slate-300 hover:shadow-lg sm:p-6 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500"
     >
       
       {/* Tipos no Canto Superior Esquerdo */}
@@ -45,7 +45,7 @@ export default function PokemonCard({
         </div>
       )}
 
-      <div className="relative w-full aspect-square mb-4 bg-transparent rounded-2xl flex items-center justify-center overflow-hidden">
+      <div className="relative mb-2 flex h-28 w-full items-center justify-center overflow-hidden rounded-2xl bg-transparent sm:mb-4 sm:h-auto sm:aspect-square">
         {/* Usando a imagem com o next/image pode dar erro se o domínio não estiver configurado, então usamos a tag <img> ou um container */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -55,7 +55,7 @@ export default function PokemonCard({
           loading="lazy"
         />
       </div>
-      <div className="flex flex-col gap-1 mt-2">
+      <div className="mt-1 flex flex-col gap-1 sm:mt-2">
         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">{formatPokemonName(pokemon.name, language)}</h3>
         <p className={`text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 ${isTranslating ? 'animate-pulse bg-slate-200 dark:bg-slate-700 h-10 rounded' : ''}`}>
           {!isTranslating && translatedDescription}

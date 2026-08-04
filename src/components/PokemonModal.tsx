@@ -1,23 +1,15 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { X } from 'lucide-react';
 import { tagImages } from '@/components/TagSelector';
 import type { Pokemon } from '@/lib/pokemonCatalog';
-import { getPokemonDetailsAction } from '@/app/actions/dataActions';
+import { getPokemonDetailsAction, type PokeApiData } from '@/app/actions/dataActions';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPokemonName, translateHabitat, translateStat } from '@/lib/formatters';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 import { translations } from '@/lib/translations';
-
-interface PokeApiData {
-  height: number;
-  weight: number;
-  abilities: { ability: { name: string }; is_hidden: boolean }[];
-  stats: { base_stat: number; stat: { name: string } }[];
-  types?: { type: { name: string } }[];
-}
 
 interface PokeApiSpecies {
   habitat: { name: string } | null;
@@ -30,6 +22,7 @@ interface PokemonModalProps {
   pokemon: Pokemon;
   onClose: () => void;
   onSelectPokemon?: (target: { name: string; imageUrl?: string }) => void;
+  initialApiData?: PokeApiData | null;
 }
 
 const POKEAPI_TYPE_TO_TAG: Record<string, string> = {
@@ -40,16 +33,22 @@ const POKEAPI_TYPE_TO_TAG: Record<string, string> = {
   rock: 'Rocha', ghost: 'Fantasma'
 };
 
-export default function PokemonModal({ pokemon, onClose, onSelectPokemon }: PokemonModalProps) {
+export default function PokemonModal({
+  pokemon,
+  onClose,
+  onSelectPokemon,
+  initialApiData,
+}: PokemonModalProps) {
   const { language } = useLanguage();
   const tTypes = translations[language].pokemonTypes as Record<string, string>;
   const tGensShort = translations[language].pokemonGenerationsShort as Record<string, string>;
-  const [apiData, setApiData] = useState<PokeApiData | null>(null);
+  const [apiData, setApiData] = useState<PokeApiData | null>(initialApiData ?? null);
   const [speciesData, setSpeciesData] = useState<PokeApiSpecies | null>(null);
   const [isShiny, setIsShiny] = useState(false);
   const [evolutions, setEvolutions] = useState<{name: string, imageUrl: string}[]>([]);
   const [megaEvolutions, setMegaEvolutions] = useState<{name: string, imageUrl: string}[]>([]);
   const [loading, setLoading] = useState(true);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   const { translatedText: translatedDescription, loading: isTranslating } = useDynamicTranslation(pokemon.description || '');
 
@@ -58,6 +57,27 @@ export default function PokemonModal({ pokemon, onClose, onSelectPokemon }: Poke
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
+    };
+  }, []);
+
+  useEffect(() => {
+    const visualViewport = window.visualViewport;
+    if (!visualViewport) return;
+
+    const fitVisibleViewport = () => {
+      if (!viewportRef.current) return;
+
+      viewportRef.current.style.top = `${visualViewport.offsetTop}px`;
+      viewportRef.current.style.height = `${visualViewport.height}px`;
+    };
+
+    fitVisibleViewport();
+    visualViewport.addEventListener('resize', fitVisibleViewport);
+    visualViewport.addEventListener('scroll', fitVisibleViewport);
+
+    return () => {
+      visualViewport.removeEventListener('resize', fitVisibleViewport);
+      visualViewport.removeEventListener('scroll', fitVisibleViewport);
     };
   }, []);
 
@@ -89,7 +109,10 @@ export default function PokemonModal({ pokemon, onClose, onSelectPokemon }: Poke
   const captureRate = speciesData?.capture_rate ? Math.round((speciesData.capture_rate / 255) * 100) + '%' : (loading ? '...' : (language === 'pt' ? 'Desconhecida' : 'Unknown'));
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-12 animate-fade-in">
+    <div
+      ref={viewportRef}
+      className="fixed inset-x-0 top-0 z-[100] flex h-screen h-[100dvh] items-center justify-center px-4 [padding-top:max(1rem,env(safe-area-inset-top))] [padding-bottom:max(1rem,env(safe-area-inset-bottom))] sm:p-6 lg:p-12 animate-fade-in"
+    >
       {/* Overlay Escuro */}
       <div 
         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
@@ -97,15 +120,17 @@ export default function PokemonModal({ pokemon, onClose, onSelectPokemon }: Poke
       ></div>
 
       {/* Container do Modal */}
-      <div className="relative w-full max-w-6xl max-h-[90vh] bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden animate-fade-in-down z-10 border border-transparent dark:border-slate-800">
+      <div className="relative z-10 flex max-h-full w-full max-w-6xl flex-col overflow-hidden rounded-[2rem] border border-transparent bg-white shadow-2xl animate-fade-in-down dark:border-slate-800 dark:bg-slate-900">
         
         {/* Header Fixo com Botão Fechar */}
-        <div className="absolute top-6 right-6 z-20">
-          <button 
+        <div className="absolute right-4 top-4 z-[30] sm:right-6 sm:top-6">
+          <button
+            type="button"
             onClick={onClose}
-            className="p-3 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 backdrop-blur rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center group"
+            className="flex min-h-12 min-w-12 touch-manipulation items-center justify-center rounded-full border border-slate-200 bg-white/80 p-3 text-slate-500 shadow-sm backdrop-blur transition-colors hover:bg-white hover:text-slate-800 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            aria-label={language === 'pt' ? 'Fechar detalhes' : 'Close details'}
           >
-            <X className="w-6 h-6 group-hover:scale-110 transition-transform" />
+            <X className="h-6 w-6" />
           </button>
         </div>
 

@@ -163,7 +163,7 @@ export default function GlobalSearch() {
 
       {/* Overlay de Busca Mobile */}
       {showMobileOverlay && (
-        <div className="fixed inset-0 z-[999] flex flex-col bg-white dark:bg-slate-900 md:hidden animate-fade-in">
+        <div className="fixed inset-0 z-[1100] flex flex-col bg-white dark:bg-slate-900 md:hidden animate-fade-in">
           <div className="flex-none border-b border-slate-200 px-4 pb-4 pt-3 dark:border-slate-800">
             <div className="mb-4 flex items-center gap-3">
               <button

@@ -89,11 +89,12 @@ export const translations = {
       anyRarity: "Qualquer raridade",
       allCategories: "Todas as categorias",
       sortBy: "Ordenar por",
-      sortAlpha: "Alfabética",
-      sortRarity: "Raridade",
-      sortGen: "Geração",
-      sortElement: "Elementar",
-      sortDefault: "Padrão",
+      sortAlpha: "Nome (A–Z)",
+      sortRarity: "Maior raridade",
+      sortGen: "Número da Pokédex",
+      sortElement: "Tipo (A–Z)",
+      sortDefault: "Ordem da Pokédex",
+      sortMatch: "Melhor correspondência",
       showing: "Exibindo",
       otherOptions: "Outras opções",
       clearFilters: "Limpar filtros",
@@ -246,6 +247,11 @@ export const translations = {
       'generation-vii': '7ª Geração',
       'generation-viii': '8ª Geração',
       'generation-ix': '9ª Geração'
+    },
+    footer: {
+      taglineStart: 'Uma Pokédex independente, alimentada por dados da',
+      taglineEnd: '.',
+      madeBy: 'Feito por'
     }
   },
   en: {
@@ -338,11 +344,12 @@ export const translations = {
       anyRarity: "Any rarity",
       allCategories: "All categories",
       sortBy: "Sort by",
-      sortAlpha: "Alphabetical",
-      sortRarity: "Rarity",
-      sortGen: "Generation",
-      sortElement: "Elemental",
-      sortDefault: "Default",
+      sortAlpha: "Name (A–Z)",
+      sortRarity: "Highest rarity",
+      sortGen: "Pokédex number",
+      sortElement: "Type (A–Z)",
+      sortDefault: "Pokédex order",
+      sortMatch: "Best match",
       showing: "Showing",
       otherOptions: "Other options",
       clearFilters: "Clear filters",
@@ -495,6 +502,11 @@ export const translations = {
       'generation-vii': '7th Gen',
       'generation-viii': '8th Gen',
       'generation-ix': '9th Gen'
+    },
+    footer: {
+      taglineStart: 'An independent Pokédex, powered by',
+      taglineEnd: 'data.',
+      madeBy: 'Built by'
     }
   }
 };
