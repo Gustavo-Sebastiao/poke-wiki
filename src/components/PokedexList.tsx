@@ -281,9 +281,17 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
     } else if (sortOrder === 'element') {
       result.sort((a, b) => (a.type || '').localeCompare(b.type || ''));
     }
+
+    const normalizedSearch = searchTerm.toLocaleLowerCase().trim();
+    const exactMatchIndex = result.findIndex((pokemon) => (
+      pokemon.name.toLocaleLowerCase().trim() === normalizedSearch
+    ));
+    if (exactMatchIndex > 0) {
+      result.unshift(result.splice(exactMatchIndex, 1)[0]);
+    }
     
     return result;
-  }, [filteredPokemons, showMegas, showAlolas, showGalar, showHisui, showPaldea, sortOrder]);
+  }, [filteredPokemons, searchTerm, showMegas, showAlolas, showGalar, showHisui, showPaldea, sortOrder]);
 
   // Calcula a quantidade de páginas
   const totalPages = Math.ceil(sortedPokemons.length / ITEMS_PER_PAGE) || 1;

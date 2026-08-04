@@ -28,7 +28,13 @@ export function rankFuzzyResults<T>(
   query: string,
   getName: (item: T) => string,
 ): FuseResult<T>[] {
+  const normalizedQuery = query.toLocaleLowerCase().trim();
+
   return [...results].sort((left, right) => {
+    const leftIsExact = getName(left.item).toLocaleLowerCase().trim() === normalizedQuery;
+    const rightIsExact = getName(right.item).toLocaleLowerCase().trim() === normalizedQuery;
+    if (leftIsExact !== rightIsExact) return leftIsExact ? -1 : 1;
+
     const scoreDifference = (left.score ?? 1) - (right.score ?? 1);
     if (Math.abs(scoreDifference) > 0.02) return scoreDifference;
 
