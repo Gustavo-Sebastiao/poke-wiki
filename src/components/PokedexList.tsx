@@ -10,6 +10,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
 import Image from 'next/image';
 import PikachuNotFound from '@/assets/icons/nao_encontrado_pikachu.png';
+import Fuse from 'fuse.js';
+import { rankFuzzyResults } from '@/lib/fuzzySearch';
 
 interface PokedexListProps {
   initialPokemons: Pokemon[];
@@ -96,9 +98,19 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   const [sortOrder, setSortOrder] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
   
   const menuRef = useRef<HTMLDivElement>(null);
+  const pokemonSearch = useMemo(() => new Fuse(initialPokemons, {
+    keys: [
+      { name: 'name', weight: 0.75 },
+      { name: 'type', weight: 0.2 },
+      { name: 'id', weight: 0.05 },
+    ],
+    threshold: 0.35,
+    ignoreLocation: true,
+    minMatchCharLength: 2,
+    includeScore: true,
+  }), [initialPokemons]);
 
   // Restore state from sessionStorage on mount
   useEffect(() => {
@@ -180,15 +192,13 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
 
   // Filtra a lista
   const filteredPokemons = useMemo(() => {
-    return initialPokemons.filter((pokemon) => {
-      // 1. Filtro por Busca Textual
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        const matchesName = pokemon.name.toLowerCase().includes(term);
-        const matchesType = pokemon.type && pokemon.type.toLowerCase().includes(term);
-        if (!matchesName && !matchesType) return false;
-      }
-      
+    const query = searchTerm.trim();
+    const searchedPokemons = query
+      ? rankFuzzyResults(pokemonSearch.search(query), query, (pokemon) => pokemon.name)
+          .map(({ item }) => item)
+      : initialPokemons;
+
+    return searchedPokemons.filter((pokemon) => {
       // 2. Filtro por Tipo (AND logic for combined filters, OR logic within types)
       if (selectedTypes.length > 0) {
         if (!pokemon.type) return false;
@@ -231,7 +241,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
       
       return true;
     });
-  }, [initialPokemons, searchTerm, selectedTypes, selectedGenerations, selectedRarities]);
+  }, [initialPokemons, pokemonSearch, searchTerm, selectedTypes, selectedGenerations, selectedRarities]);
 
   const sortedPokemons = useMemo(() => {
     let result = [...filteredPokemons];
@@ -377,61 +387,68 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         />
       )}
       
-      {/* Desktop Search Bar */}
-      <div className="hidden md:flex gap-3 mb-12 items-stretch max-w-2xl mx-auto md:mr-0 relative z-20">
-        <div className="relative flex-1">
-          <input 
-            type="text" 
+      {/* Mobile Search & Filters Row */}
+      <div className="relative z-20 mb-6 flex w-full items-center gap-2 md:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileFilters(true)}
+          className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+          aria-label={t.filtersLabel}
+        >
+          <Filter className="h-4 w-4" />
+          <span>{t.filtersLabel}</span>
+        </button>
+        <div className="relative min-w-0 flex-1">
+          <input
+            type="text"
+            aria-label={t.search}
             placeholder={t.search}
             value={searchTerm}
             onChange={handleSearch}
-            className="w-full px-2 pr-12 py-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b-2 border-slate-800 rounded-none text-slate-800 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#59F7E2] transition-all text-xl font-medium h-full"
+            className="h-11 w-full min-w-0 rounded-none border-0 border-b-2 border-slate-800 bg-transparent px-2 pr-10 text-base font-medium text-slate-800 outline-none transition-colors placeholder:text-slate-500 focus:border-[#59F7E2] focus:ring-0 dark:border-slate-300 dark:text-slate-100 dark:placeholder:text-slate-400"
           />
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-800 dark:text-slate-100 w-6 h-6 pointer-events-none" />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+              aria-label={t.clear}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          {!searchTerm && (
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-700 dark:text-slate-200" />
+          )}
         </div>
-      </div>
-
-      {/* Mobile Search & Filters Row */}
-      <div className="md:hidden flex items-center mb-12 gap-3 w-full bg-transparent relative z-20">
-        {showMobileSearch ? (
-          <div className="flex-1 relative flex items-center bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
-            <input 
-              type="text" 
-              autoFocus
-              placeholder={t.search}
-              value={searchTerm}
-              onChange={handleSearch}
-              className="w-full pl-6 pr-12 py-3 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-500 font-medium"
-            />
-            <button 
-              onClick={() => { setShowMobileSearch(false); setSearchTerm(''); }}
-              className="absolute right-2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        ) : (
-          <div className="flex justify-start items-center gap-6 w-full px-2">
-            <button 
-              onClick={() => setShowMobileFilters(true)}
-              className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
-              title="Filtros"
-            >
-              <Filter className="w-7 h-7" />
-            </button>
-            <button 
-              onClick={() => setShowMobileSearch(true)}
-              className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
-              title="Pesquisar"
-            >
-              <Search className="w-7 h-7" />
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Desktop Filters Bar */}
       <div className="hidden md:flex flex-row flex-wrap items-center gap-3 mb-8 relative" ref={menuRef}>
+        <div className="relative w-[240px]">
+          <input
+            type="text"
+            aria-label={t.search}
+            placeholder={t.search}
+            value={searchTerm}
+            onChange={handleSearch}
+            className="h-11 w-full rounded-none border-0 border-b-2 border-slate-800 bg-transparent px-2 pr-9 text-sm font-semibold text-slate-700 outline-none transition-colors placeholder:text-slate-500 focus:border-[#59F7E2] focus:ring-0 dark:border-slate-300 dark:text-slate-200 dark:placeholder:text-slate-400"
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+              aria-label={t.clear}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          {!searchTerm && (
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-700 dark:text-slate-200" />
+          )}
+        </div>
+
         {/* Dropdown Geração */}
         <div className="relative w-full md:w-auto">
           <button 

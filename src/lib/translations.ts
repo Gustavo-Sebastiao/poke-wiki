@@ -77,9 +77,13 @@ export const translations = {
       error: "Não foi possível carregar os detalhes do item."
     },
     filters: {
-      search: "Procurar",
-      searchItem: "Procurar item",
-      searchGlobal: "Procurar Pokémon ou Item...",
+      search: "Filtrar Pokémon...",
+      searchItem: "Filtrar itens...",
+      searchGlobal: "Buscar na PokéWiki...",
+      globalSearchTitle: "Busca na PokéWiki",
+      globalSearchHint: "Encontre Pokémon e itens",
+      closeSearch: "Fechar busca",
+      filtersLabel: "Filtros",
       allGenerations: "Todas as gerações",
       allTypes: "Todos os tipos",
       anyRarity: "Qualquer raridade",
@@ -322,9 +326,13 @@ export const translations = {
       error: "Could not load item details."
     },
     filters: {
-      search: "Search",
-      searchItem: "Search item",
-      searchGlobal: "Search Pokémon or Item...",
+      search: "Filter Pokémon...",
+      searchItem: "Filter items...",
+      searchGlobal: "Search PokéWiki...",
+      globalSearchTitle: "Search PokéWiki",
+      globalSearchHint: "Find Pokémon and items",
+      closeSearch: "Close search",
+      filtersLabel: "Filters",
       allGenerations: "All generations",
       allTypes: "All types",
       anyRarity: "Any rarity",
