@@ -27,6 +27,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Maintenance Scripts
 
+The public Pokédex is generated from PokeAPI and does not query Supabase at runtime. Refresh the checked-in snapshot after PokeAPI adds a generation or supported form, and before a release that should include upstream data changes:
+
+```bash
+pnpm run data:pokemons
+```
+
+The generator discovers the current PokeAPI species catalog, fetches base Pokémon plus supported Mega and regional forms, translates each unique English description to Portuguese, and writes `src/data/pokemons.json`. Normal application builds use that snapshot and do not regenerate it automatically.
+
 Node does not automatically load Next.js environment files. Run maintenance scripts explicitly with the local environment file:
 
 ```bash

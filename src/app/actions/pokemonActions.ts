@@ -3,8 +3,8 @@
 import {
   createPokemon,
   deletePokemon,
+  getAdminPokemons,
   getPokemonById,
-  getPokemons,
   type Pokemon,
   updatePokemon,
 } from '@/lib/pokemonService';
@@ -22,7 +22,7 @@ const adminRoles = ['admin', 'superadmin'] as const;
 export async function getAdminPokemonsAction(accessToken: string): Promise<ActionResponse<Pokemon[]>> {
   try {
     await requireRole(accessToken, adminRoles);
-    return { success: true, data: await getPokemons() };
+    return { success: true, data: await getAdminPokemons() };
   } catch (error) {
     return { success: false, message: getErrorMessage(error) };
   }

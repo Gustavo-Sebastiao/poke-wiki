@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getPokemons, createPokemon } from '@/lib/pokemonService';
+import { getPokemons } from '@/lib/pokemonCatalog';
+import { createPokemon } from '@/lib/pokemonService';
 import { requireRole } from '@/lib/server/authorization';
 
 // Rota GET: /api/pokemons

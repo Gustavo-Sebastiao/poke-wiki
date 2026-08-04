@@ -4,18 +4,21 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PokemonCard from '@/components/PokemonCard';
 import PokemonModal from '@/components/PokemonModal';
-import { Search, ChevronLeft, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
-import type { Pokemon } from '@/lib/pokemonService';
+import { Search, ChevronLeft, ChevronRight, Filter, X, ChevronDown, Check } from 'lucide-react';
+import type { Pokemon } from '@/lib/pokemonCatalog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
 import Image from 'next/image';
 import PikachuNotFound from '@/assets/icons/nao_encontrado_pikachu.png';
+import Fuse from 'fuse.js';
+import { rankFuzzyResults } from '@/lib/fuzzySearch';
+import { getPokemonStatsAction, type PokeApiData } from '@/app/actions/dataActions';
 
 interface PokedexListProps {
   initialPokemons: Pokemon[];
 }
 
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_PAGE = 16;
 
 const POKEMON_TAGS = [
   'Fogo', 'Água', 'Elétrico', 'Aço', 'Luta', 'Psíquico', 'Escuridão', 'Normal', 
@@ -57,6 +60,14 @@ function getPokemonIdFromUrl(url?: string): number | null {
   return null;
 }
 
+function restoreToggle(value: unknown): boolean {
+  return value === true || value === 'true';
+}
+
+function getPokemonStatsKey(pokemon: Pokemon): string {
+  return String(pokemon.id ?? pokemon.image_url ?? pokemon.name);
+}
+
 const ToggleSwitch = ({ label, checked, onChange }: { label: string, checked: boolean, onChange: () => void }) => (
   <label className="flex items-center justify-between cursor-pointer p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors select-none">
     <span className="text-slate-700 dark:text-slate-200 font-medium text-sm">{label}</span>
@@ -65,6 +76,40 @@ const ToggleSwitch = ({ label, checked, onChange }: { label: string, checked: bo
       <div className={`block w-10 h-6 rounded-full transition-colors ${checked ? 'bg-[#59F7E2]' : 'bg-slate-300'}`}></div>
       <div className={`absolute left-1 top-1 bg-white dark:bg-slate-800 w-4 h-4 rounded-full transition-transform ${checked ? 'transform translate-x-4' : ''}`}></div>
     </div>
+  </label>
+);
+
+const FilterCheckbox = ({
+  label,
+  checked,
+  onChange,
+  large = false,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+  large?: boolean;
+}) => (
+  <label className="group flex cursor-pointer items-center gap-3 rounded-xl border border-transparent p-2 transition-colors hover:border-slate-200 hover:bg-slate-50 dark:hover:border-slate-700 dark:hover:bg-slate-700/40">
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="peer sr-only"
+    />
+    <span
+      aria-hidden="true"
+      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-[#59F7E2]/50 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white dark:peer-focus-visible:ring-offset-slate-800 ${
+        checked
+          ? 'border-[#59F7E2] bg-[#59F7E2] text-slate-900'
+          : 'border-slate-300 bg-white text-transparent group-hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:group-hover:border-slate-500'
+      }`}
+    >
+      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+    </span>
+    <span className={`${large ? 'text-base' : 'text-sm'} font-medium text-slate-700 dark:text-slate-200`}>
+      {label}
+    </span>
   </label>
 );
 
@@ -92,9 +137,30 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   const [sortOrder, setSortOrder] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [pokemonStats, setPokemonStats] = useState<Record<string, PokeApiData | null>>({});
+  const pendingStatsRef = useRef(new Set<string>());
+  const defaultSortLabel = searchTerm.trim() ? t.sortMatch : t.sortDefault;
+  const sortOptions = [
+    { value: '', label: defaultSortLabel },
+    { value: 'alpha', label: t.sortAlpha },
+    { value: 'rarity', label: t.sortRarity },
+    { value: 'gen', label: t.sortGen },
+    { value: 'element', label: t.sortElement },
+  ];
+  const selectedSortLabel = sortOptions.find(({ value }) => value === (sortOrder ?? ''))?.label ?? defaultSortLabel;
   
   const menuRef = useRef<HTMLDivElement>(null);
+  const pokemonSearch = useMemo(() => new Fuse(initialPokemons, {
+    keys: [
+      { name: 'name', weight: 0.75 },
+      { name: 'type', weight: 0.2 },
+      { name: 'id', weight: 0.05 },
+    ],
+    threshold: 0.35,
+    ignoreLocation: true,
+    minMatchCharLength: 2,
+    includeScore: true,
+  }), [initialPokemons]);
 
   // Restore state from sessionStorage on mount
   useEffect(() => {
@@ -107,11 +173,11 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         if (parsed.selectedTypes !== undefined) setSelectedTypes(parsed.selectedTypes);
         if (parsed.selectedGenerations !== undefined) setSelectedGenerations(parsed.selectedGenerations);
         if (parsed.selectedRarities !== undefined) setSelectedRarities(parsed.selectedRarities);
-        if (parsed.showMegas !== undefined) setShowMegas(parsed.showMegas === 'true');
-      if (parsed.showAlolas !== undefined) setShowAlolas(parsed.showAlolas === 'true');
-      if (parsed.showGalar !== undefined) setShowGalar(parsed.showGalar === 'true');
-      if (parsed.showHisui !== undefined) setShowHisui(parsed.showHisui === 'true');
-      if (parsed.showPaldea !== undefined) setShowPaldea(parsed.showPaldea === 'true');
+        if (parsed.showMegas !== undefined) setShowMegas(restoreToggle(parsed.showMegas));
+        if (parsed.showAlolas !== undefined) setShowAlolas(restoreToggle(parsed.showAlolas));
+        if (parsed.showGalar !== undefined) setShowGalar(restoreToggle(parsed.showGalar));
+        if (parsed.showHisui !== undefined) setShowHisui(restoreToggle(parsed.showHisui));
+        if (parsed.showPaldea !== undefined) setShowPaldea(restoreToggle(parsed.showPaldea));
         if (parsed.sortOrder !== undefined) setSortOrder(parsed.sortOrder);
       } catch (e) {}
     }
@@ -128,6 +194,10 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
       selectedGenerations,
       selectedRarities,
       showMegas,
+      showAlolas,
+      showGalar,
+      showHisui,
+      showPaldea,
       sortOrder
     };
     sessionStorage.setItem('pokedex_state', JSON.stringify(stateToSave));
@@ -165,22 +235,20 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
     setCurrentPage(1);
   };
 
-  const handleToggleSort = (order: string) => {
-    setSortOrder(prev => prev === order ? null : order);
+  const handleSortChange = (order: string) => {
+    setSortOrder(order || null);
     setCurrentPage(1);
   };
 
   // Filtra a lista
   const filteredPokemons = useMemo(() => {
-    return initialPokemons.filter((pokemon) => {
-      // 1. Filtro por Busca Textual
-      if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-        const matchesName = pokemon.name.toLowerCase().includes(term);
-        const matchesType = pokemon.type && pokemon.type.toLowerCase().includes(term);
-        if (!matchesName && !matchesType) return false;
-      }
-      
+    const query = searchTerm.trim();
+    const searchedPokemons = query
+      ? rankFuzzyResults(pokemonSearch.search(query), query, (pokemon) => pokemon.name)
+          .map(({ item }) => item)
+      : initialPokemons;
+
+    return searchedPokemons.filter((pokemon) => {
       // 2. Filtro por Tipo (AND logic for combined filters, OR logic within types)
       if (selectedTypes.length > 0) {
         if (!pokemon.type) return false;
@@ -223,7 +291,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
       
       return true;
     });
-  }, [initialPokemons, searchTerm, selectedTypes, selectedGenerations, selectedRarities]);
+  }, [initialPokemons, pokemonSearch, searchTerm, selectedTypes, selectedGenerations, selectedRarities]);
 
   const sortedPokemons = useMemo(() => {
     let result = [...filteredPokemons];
@@ -263,9 +331,17 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
     } else if (sortOrder === 'element') {
       result.sort((a, b) => (a.type || '').localeCompare(b.type || ''));
     }
+
+    const normalizedSearch = searchTerm.toLocaleLowerCase().trim();
+    const exactMatchIndex = result.findIndex((pokemon) => (
+      pokemon.name.toLocaleLowerCase().trim() === normalizedSearch
+    ));
+    if (exactMatchIndex > 0) {
+      result.unshift(result.splice(exactMatchIndex, 1)[0]);
+    }
     
     return result;
-  }, [filteredPokemons, showMegas, showAlolas, showGalar, showHisui, showPaldea, sortOrder]);
+  }, [filteredPokemons, searchTerm, showMegas, showAlolas, showGalar, showHisui, showPaldea, sortOrder]);
 
   // Calcula a quantidade de páginas
   const totalPages = Math.ceil(sortedPokemons.length / ITEMS_PER_PAGE) || 1;
@@ -275,6 +351,34 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return sortedPokemons.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [sortedPokemons, currentPage]);
+
+  useEffect(() => {
+    const requests = paginatedPokemons.flatMap((pokemon) => {
+      const key = getPokemonStatsKey(pokemon);
+      if (Object.hasOwn(pokemonStats, key) || pendingStatsRef.current.has(key)) return [];
+
+      pendingStatsRef.current.add(key);
+      return [{ key, name: pokemon.name, imageUrl: pokemon.image_url }];
+    });
+    if (requests.length === 0) return;
+
+    void getPokemonStatsAction(requests)
+      .then((results) => {
+        setPokemonStats((current) => {
+          const next = { ...current };
+          results.forEach(({ key, apiData }) => {
+            next[key] = apiData;
+          });
+          return next;
+        });
+      })
+      .catch((error) => {
+        console.error('Erro ao pré-carregar atributos da página:', error);
+      })
+      .finally(() => {
+        requests.forEach(({ key }) => pendingStatsRef.current.delete(key));
+      });
+  }, [paginatedPokemons, pokemonStats]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -316,6 +420,9 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
     }
     return null;
   }, [selectedPokemonId, selectedPokemonName, initialPokemons]);
+  const selectedPokemonStats = selectedPokemon
+    ? pokemonStats[getPokemonStatsKey(selectedPokemon)]
+    : undefined;
 
   const handleSelectPokemon = (pokemon: Pokemon) => {
     // Adiciona o parametro pokemon na URL sem recarregar a pagina
@@ -362,68 +469,77 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
   return (
     <>
       {selectedPokemon && (
-        <PokemonModal 
+        <PokemonModal
+          key={getPokemonStatsKey(selectedPokemon)}
           pokemon={selectedPokemon} 
           onClose={handleCloseModal} 
           onSelectPokemon={handleSelectPokemonTarget}
+          initialApiData={selectedPokemonStats}
         />
       )}
       
-      {/* Desktop Search Bar */}
-      <div className="hidden md:flex gap-3 mb-12 items-stretch max-w-2xl mx-auto md:mr-0 relative z-20">
-        <div className="relative flex-1">
-          <input 
-            type="text" 
+      {/* Mobile Search & Filters Row */}
+      <div className="relative z-20 mb-6 flex w-full items-center gap-2 md:hidden">
+        <button
+          type="button"
+          onClick={() => setShowMobileFilters(true)}
+          className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+          aria-label={t.filtersLabel}
+        >
+          <Filter className="h-4 w-4" />
+          <span>{t.filtersLabel}</span>
+        </button>
+        <div className="relative min-w-0 flex-1">
+          <input
+            type="text"
+            aria-label={t.search}
             placeholder={t.search}
             value={searchTerm}
             onChange={handleSearch}
-            className="w-full px-2 pr-12 py-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b-2 border-slate-800 rounded-none text-slate-800 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#59F7E2] transition-all text-xl font-medium h-full"
+            className="h-11 w-full min-w-0 rounded-none border-0 border-b-2 border-slate-800 bg-transparent px-2 pr-10 text-base font-medium text-slate-800 outline-none transition-colors placeholder:text-slate-500 focus:border-[#59F7E2] focus:ring-0 dark:border-slate-300 dark:text-slate-100 dark:placeholder:text-slate-400"
           />
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-800 dark:text-slate-100 w-6 h-6 pointer-events-none" />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+              aria-label={t.clear}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          {!searchTerm && (
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-700 dark:text-slate-200" />
+          )}
         </div>
-      </div>
-
-      {/* Mobile Search & Menu Row */}
-      <div className="md:hidden flex items-center mb-12 gap-3 w-full bg-transparent relative z-20">
-        {showMobileSearch ? (
-          <div className="flex-1 relative flex items-center bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
-            <input 
-              type="text" 
-              autoFocus
-              placeholder={t.search}
-              value={searchTerm}
-              onChange={handleSearch}
-              className="w-full pl-6 pr-12 py-3 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-500 font-medium"
-            />
-            <button 
-              onClick={() => { setShowMobileSearch(false); setSearchTerm(''); }}
-              className="absolute right-2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        ) : (
-          <div className="flex justify-start items-center gap-6 w-full px-2">
-            <button 
-              onClick={() => setShowMobileFilters(true)}
-              className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
-              title="Filtros"
-            >
-              <Menu className="w-7 h-7" />
-            </button>
-            <button 
-              onClick={() => setShowMobileSearch(true)}
-              className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
-              title="Pesquisar"
-            >
-              <Search className="w-7 h-7" />
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Desktop Filters Bar */}
       <div className="hidden md:flex flex-row flex-wrap items-center gap-3 mb-8 relative" ref={menuRef}>
+        <div className="relative w-[240px]">
+          <input
+            type="text"
+            aria-label={t.search}
+            placeholder={t.search}
+            value={searchTerm}
+            onChange={handleSearch}
+            className="h-11 w-full rounded-none border-0 border-b-2 border-slate-800 bg-transparent px-2 pr-9 text-sm font-semibold text-slate-700 outline-none transition-colors placeholder:text-slate-500 focus:border-[#59F7E2] focus:ring-0 dark:border-slate-300 dark:text-slate-200 dark:placeholder:text-slate-400"
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+              aria-label={t.clear}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          {!searchTerm && (
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-700 dark:text-slate-200" />
+          )}
+        </div>
+
         {/* Dropdown Geração */}
         <div className="relative w-full md:w-auto">
           <button 
@@ -439,17 +555,12 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">{t.generation}</h3>
               <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {GENERATIONS.map(gen => (
-                  <label key={gen.id} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedGenerations.includes(gen.id)}
-                      onChange={() => toggleGen(gen.id)}
-                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
-                    />
-                    <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 transition-colors font-medium text-sm">
-                      {tGens[gen.name] || gen.name}
-                    </span>
-                  </label>
+                  <FilterCheckbox
+                    key={gen.id}
+                    label={tGens[gen.name] || gen.name}
+                    checked={selectedGenerations.includes(gen.id)}
+                    onChange={() => toggleGen(gen.id)}
+                  />
                 ))}
               </div>
             </div>
@@ -506,64 +617,93 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">{t.rarity}</h3>
               <div className="flex flex-col gap-2">
                 {RARITIES.map(rarity => (
-                  <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedRarities.includes(rarity)}
-                      onChange={() => toggleRarity(rarity)}
-                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
-                    />
-                    <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 transition-colors font-medium text-sm">
-                      {tRarity[rarity] || rarity}
-                    </span>
-                  </label>
+                  <FilterCheckbox
+                    key={rarity}
+                    label={tRarity[rarity] || rarity}
+                    checked={selectedRarities.includes(rarity)}
+                    onChange={() => toggleRarity(rarity)}
+                  />
                 ))}
               </div>
             </div>
           )}
         </div>
 
-        {/* Dropdown Ordenar */}
+        {/* Ordenação */}
         <div className="relative w-full md:w-auto">
-          <button 
+          <button
+            type="button"
             onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
-            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'sort' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+            className={`flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-xl border-2 bg-white px-4 py-3 text-sm font-semibold text-slate-600 shadow-md transition-all dark:bg-slate-800 dark:text-slate-300 md:justify-center md:rounded-full md:py-2.5 md:hover:scale-105 ${
+              openDropdown === 'sort'
+                ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30'
+                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800/50'
+            }`}
+            aria-expanded={openDropdown === 'sort'}
+            aria-haspopup="menu"
           >
-            {t.sortBy} {sortOrder === 'alpha' ? t.sortAlpha : sortOrder === 'rarity' ? t.sortRarity : sortOrder === 'gen' ? t.sortGen : sortOrder === 'element' ? t.sortElement : t.sortDefault}
-            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
+            {t.sortBy}: {selectedSortLabel}
+            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform dark:text-slate-500 ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
           </button>
-          
+
           {openDropdown === 'sort' && (
-            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[280px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">{t.order}</h3>
-              <div className="flex flex-col gap-2">
-                <ToggleSwitch label={t.listAlpha} checked={sortOrder === 'alpha'} onChange={() => handleToggleSort('alpha')} />
-                <ToggleSwitch label={t.listRarity} checked={sortOrder === 'rarity'} onChange={() => handleToggleSort('rarity')} />
-                <ToggleSwitch label={t.listGen} checked={sortOrder === 'gen'} onChange={() => handleToggleSort('gen')} />
-                <ToggleSwitch label={t.listElement} checked={sortOrder === 'element'} onChange={() => handleToggleSort('element')} />
+            <div
+              className="absolute left-0 top-14 z-50 w-[240px] animate-fade-in-down rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-800"
+              role="menu"
+              aria-label={t.sortBy}
+            >
+              <h3 className="mb-2 px-2 text-sm font-bold text-slate-800 dark:text-slate-100">{t.sortBy}</h3>
+              <div className="flex flex-col gap-1">
+                {sortOptions.map((option) => {
+                  const isSelected = option.value === (sortOrder ?? '');
+
+                  return (
+                    <button
+                      key={option.value || 'default'}
+                      type="button"
+                      onClick={() => {
+                        handleSortChange(option.value);
+                        setOpenDropdown(null);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors ${
+                        isSelected
+                          ? 'bg-[#59F7E2]/25 text-slate-900 dark:bg-[#59F7E2]/15 dark:text-white'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700/60 dark:hover:text-white'
+                      }`}
+                      role="menuitemradio"
+                      aria-checked={isSelected}
+                    >
+                      {option.label}
+                      <span className={`h-2 w-2 rounded-full ${isSelected ? 'bg-[#34cdb9]' : 'bg-transparent'}`} />
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
         </div>
 
-        {/* Dropdown Opções Extras */}
+        {/* Dropdown Formas Especiais */}
         <div className="relative w-full md:w-auto">
           <button 
             onClick={() => setOpenDropdown(openDropdown === 'options' ? null : 'options')}
             className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'options' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
           >
-            {(showMegas || showAlolas || showGalar || showHisui || showPaldea) ? `${t.showing} ${[showMegas && 'Megas', showAlolas && 'Alola', showGalar && 'Galar', showHisui && 'Hisui', showPaldea && 'Paldea'].filter(Boolean).join(' & ')}` : t.otherOptions}
+            {(showMegas || showAlolas || showGalar || showHisui || showPaldea) ? `${[showMegas, showAlolas, showGalar, showHisui, showPaldea].filter(Boolean).length} ${t.formsSelected}` : t.specialForms}
             <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'options' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'options' && (
             <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[240px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">{t.options}</h3>
-              <ToggleSwitch label={t.showMegas} checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showAlola} checked={showAlolas} onChange={() => { setShowAlolas(!showAlolas); setCurrentPage(1); }} />
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{t.specialForms}</h3>
+              <p className="mt-1 mb-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t.specialFormsHelp}</p>
+              <div className="flex flex-col gap-2">
+                <ToggleSwitch label={t.showMegas} checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showAlola} checked={showAlolas} onChange={() => { setShowAlolas(!showAlolas); setCurrentPage(1); }} />
                 <ToggleSwitch label={t.showGalar} checked={showGalar} onChange={() => { setShowGalar(!showGalar); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showHisui} checked={showHisui} onChange={() => { setShowHisui(!showHisui); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showPaldea} checked={showPaldea} onChange={() => { setShowPaldea(!showPaldea); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showHisui} checked={showHisui} onChange={() => { setShowHisui(!showHisui); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showPaldea} checked={showPaldea} onChange={() => { setShowPaldea(!showPaldea); setCurrentPage(1); }} />
+              </div>
             </div>
           )}
         </div>
@@ -579,12 +719,12 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         )}
       </div>
 
-      {/* Menu Modal de Filtros Mobile */}
+      {/* Modal de Filtros Mobile */}
       {showMobileFilters && (
         <div className="fixed inset-0 bg-white dark:bg-slate-800 z-[200] flex flex-col md:hidden animate-fade-in-down overflow-hidden">
           {/* Header */}
           <div className="flex-none flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><Menu className="w-6 h-6 text-[#59F7E2]"/> Filtros</h2>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><Filter className="w-6 h-6 text-[#59F7E2]"/> Filtros</h2>
             <button onClick={() => setShowMobileFilters(false)} className="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-full text-slate-600 dark:text-slate-300 transition-colors">
               <X className="w-6 h-6" />
             </button>
@@ -597,17 +737,13 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
               <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.generation}</h3>
               <div className="flex flex-col gap-3">
                 {GENERATIONS.map(gen => (
-                  <label key={gen.id} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedGenerations.includes(gen.id)}
-                      onChange={() => toggleGen(gen.id)}
-                      className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-[#59F7E2] focus:ring-[#59F7E2] transition-all cursor-pointer"
-                    />
-                    <span className="text-slate-700 dark:text-slate-200 font-medium text-base">
-                      {tGens[gen.name] || gen.name}
-                    </span>
-                  </label>
+                  <FilterCheckbox
+                    key={gen.id}
+                    label={tGens[gen.name] || gen.name}
+                    checked={selectedGenerations.includes(gen.id)}
+                    onChange={() => toggleGen(gen.id)}
+                    large
+                  />
                 ))}
               </div>
             </div>
@@ -640,17 +776,13 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
               <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.rarity}</h3>
               <div className="flex flex-col gap-3">
                 {RARITIES.map(rarity => (
-                  <label key={rarity} className="flex items-center gap-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedRarities.includes(rarity)}
-                      onChange={() => toggleRarity(rarity)}
-                      className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-amber-400 focus:ring-amber-400 transition-all cursor-pointer"
-                    />
-                    <span className="text-slate-700 dark:text-slate-200 font-medium text-base">
-                      {tRarity[rarity] || rarity}
-                    </span>
-                  </label>
+                  <FilterCheckbox
+                    key={rarity}
+                    label={tRarity[rarity] || rarity}
+                    checked={selectedRarities.includes(rarity)}
+                    onChange={() => toggleRarity(rarity)}
+                    large
+                  />
                 ))}
               </div>
             </div>
@@ -658,22 +790,34 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
             {/* Ordenação */}
             <div>
               <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.order}</h3>
-              <div className="flex flex-col gap-4">
-                <ToggleSwitch label={t.listAlpha} checked={sortOrder === 'alpha'} onChange={() => handleToggleSort('alpha')} />
-                <ToggleSwitch label={t.listRarity} checked={sortOrder === 'rarity'} onChange={() => handleToggleSort('rarity')} />
-                <ToggleSwitch label={t.listGen} checked={sortOrder === 'gen'} onChange={() => handleToggleSort('gen')} />
-                <ToggleSwitch label={t.listElement} checked={sortOrder === 'element'} onChange={() => handleToggleSort('element')} />
+              <div className="relative">
+                <select
+                  aria-label={t.sortBy}
+                  value={sortOrder ?? ''}
+                  onChange={(event) => handleSortChange(event.target.value)}
+                  className="w-full appearance-none rounded-xl border-2 border-slate-200 bg-white px-4 py-3 pr-10 text-base font-medium text-slate-700 transition-colors cursor-pointer hover:border-slate-300 focus:border-[#59F7E2] focus:outline-none focus:ring-2 focus:ring-[#59F7E2]/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600"
+                >
+                  <option value="">{defaultSortLabel}</option>
+                  <option value="alpha">{t.sortAlpha}</option>
+                  <option value="rarity">{t.sortRarity}</option>
+                  <option value="gen">{t.sortGen}</option>
+                  <option value="element">{t.sortElement}</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 w-5 h-5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               </div>
             </div>
             
-            {/* Outras opções */}
+            {/* Formas especiais */}
             <div>
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.options}</h3>
-              <ToggleSwitch label={t.showMegas} checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showAlola} checked={showAlolas} onChange={() => { setShowAlolas(!showAlolas); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showGalar} checked={showGalar} onChange={() => { setShowGalar(!showGalar); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showHisui} checked={showHisui} onChange={() => { setShowHisui(!showHisui); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showPaldea} checked={showPaldea} onChange={() => { setShowPaldea(!showPaldea); setCurrentPage(1); }} />
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.specialForms}</h3>
+              <p className="mt-2 mb-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{t.specialFormsHelp}</p>
+              <div className="flex flex-col gap-3">
+                <ToggleSwitch label={t.showMegas} checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showAlola} checked={showAlolas} onChange={() => { setShowAlolas(!showAlolas); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showGalar} checked={showGalar} onChange={() => { setShowGalar(!showGalar); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showHisui} checked={showHisui} onChange={() => { setShowHisui(!showHisui); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showPaldea} checked={showPaldea} onChange={() => { setShowPaldea(!showPaldea); setCurrentPage(1); }} />
+              </div>
             </div>
           </div>
           

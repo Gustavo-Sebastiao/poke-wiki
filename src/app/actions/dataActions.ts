@@ -3,11 +3,27 @@
 import { getItemDetails, type ItemDetails } from '@/lib/itemService';
 import { fetchPokemonFromPokeAPI } from '@/lib/pokeapi';
 
-type PokeApiData = {
+export type PokeApiData = {
   height: number;
   weight: number;
   abilities: { ability: { name: string }; is_hidden: boolean }[];
   stats: { base_stat: number; stat: { name: string } }[];
+  types?: { type: { name: string } }[];
+};
+
+type PokeApiPokemonResponse = PokeApiData & {
+  species?: { url: string };
+};
+
+type PokemonStatsRequest = {
+  key: string;
+  name: string;
+  imageUrl?: string;
+};
+
+type PokemonStatsResult = {
+  key: string;
+  apiData: PokeApiData | null;
 };
 
 type PokeApiSpecies = {
@@ -26,12 +42,44 @@ type PokemonDetails = {
   megaEvolutions: Evolution[];
 };
 
+function getPokemonIdentifier(name: string, imageUrl?: string) {
+  const imageId = imageUrl?.match(/\/(\d+)\.(png|jpg|jpeg|gif)$/i)?.[1];
+  return imageId ?? name.toLowerCase().replace(/\s+/g, '-');
+}
+
+function selectPokemonStats(pokemon: PokeApiPokemonResponse): PokeApiData {
+  return {
+    height: pokemon.height,
+    weight: pokemon.weight,
+    abilities: pokemon.abilities,
+    stats: pokemon.stats,
+    types: pokemon.types,
+  };
+}
+
 export async function getItemDetailsAction(id: number): Promise<ItemDetails | null> {
   return getItemDetails(id);
 }
 
 export async function fetchPokemonFromPokeAPIAction(pokemonName: string) {
   return fetchPokemonFromPokeAPI(pokemonName);
+}
+
+export async function getPokemonStatsAction(
+  requests: PokemonStatsRequest[],
+): Promise<PokemonStatsResult[]> {
+  return Promise.all(requests.map(async ({ key, name, imageUrl }) => {
+    try {
+      const identifier = getPokemonIdentifier(name, imageUrl);
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${identifier}`);
+      if (!response.ok) return { key, apiData: null };
+
+      const pokemon = await response.json() as PokeApiPokemonResponse;
+      return { key, apiData: selectPokemonStats(pokemon) };
+    } catch {
+      return { key, apiData: null };
+    }
+  }));
 }
 
 export async function getPokemonDetailsAction(
@@ -44,16 +92,14 @@ export async function getPokemonDetailsAction(
     evolutions: [],
     megaEvolutions: [],
   };
-  let identifier = pokemonName.toLowerCase().replace(/\s+/g, '-');
-  const imageId = imageUrl?.match(/\/(\d+)\.(png|jpg|jpeg|gif)$/i)?.[1];
-  if (imageId) identifier = imageId;
+  const identifier = getPokemonIdentifier(pokemonName, imageUrl);
 
   try {
     const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${identifier}`);
     if (!pokemonResponse.ok) return emptyDetails;
 
-    const pokemon = await pokemonResponse.json();
-    const result: PokemonDetails = { ...emptyDetails, apiData: pokemon };
+    const pokemon = await pokemonResponse.json() as PokeApiPokemonResponse;
+    const result: PokemonDetails = { ...emptyDetails, apiData: selectPokemonStats(pokemon) };
     if (!pokemon.species?.url) return result;
 
     const speciesResponse = await fetch(pokemon.species.url);

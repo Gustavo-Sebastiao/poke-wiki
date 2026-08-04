@@ -161,7 +161,7 @@ export default function HomeCarousel() {
               {slides[current].title}
             </h2>
             
-            <h3 className="text-[28px] sm:text-4xl md:text-5xl font-black md:font-light md:italic text-white dark:text-slate-400 max-md:text-white max-md:dark:text-white mb-3 md:mb-4 transition-all uppercase max-md:drop-shadow-sm max-md:tracking-wide">
+            <h3 className="text-[28px] sm:text-4xl md:text-5xl font-black md:font-light md:italic text-slate-400 dark:text-slate-400 max-md:text-white max-md:dark:text-white mb-3 md:mb-4 transition-all uppercase max-md:drop-shadow-sm max-md:tracking-wide">
               {slides[current].subtitle}
             </h3>
             
