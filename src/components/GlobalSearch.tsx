@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
 
 interface SearchResult {
-  id: number;
+  id: string | number;
   name: string;
   image_url: string;
   type: 'pokemon' | 'item';

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Search, ChevronLeft, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Filter, X, ChevronDown } from 'lucide-react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import type { Item } from '@/lib/itemService';
@@ -180,7 +180,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
         </div>
       </div>
 
-      {/* Mobile Search & Menu Row */}
+      {/* Mobile Search & Filters Row */}
       <div className="md:hidden flex items-center mb-12 gap-3 w-full bg-transparent relative z-20">
         {showMobileSearch ? (
           <div className="flex-1 relative flex items-center bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
@@ -206,7 +206,7 @@ export default function ItemsList({ initialItems }: ItemsListProps) {
               className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
               title="Filtros"
             >
-              <Menu className="w-7 h-7" />
+              <Filter className="w-7 h-7" />
             </button>
             <button 
               onClick={() => setShowMobileSearch(true)}

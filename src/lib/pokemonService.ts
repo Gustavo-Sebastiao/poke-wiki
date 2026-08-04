@@ -1,33 +1,21 @@
 import 'server-only';
 
 import { supabaseAdmin } from './supabaseAdmin';
+import type { Pokemon } from './pokemonCatalog';
 
-export interface Pokemon {
-  id?: string;
-  name: string;
-  description: string;
-  type: string;
-  weaknesses: string[];
-  image_url?: string;
-  habitat?: string;
-}
+export type { Pokemon } from './pokemonCatalog';
 
-// Buscar todos os Pokémons, opcionalmente filtrando por tipo
-export async function getPokemons(type?: string) {
-  let allData: any[] = [];
+export async function getAdminPokemons(): Promise<Pokemon[]> {
+  const allData: Pokemon[] = [];
   let from = 0;
   const limit = 1000;
   
   while (true) {
-    let query = supabaseAdmin
+    const query = supabaseAdmin
       .from('pokemons')
       .select('*')
       .order('created_at', { ascending: false })
       .range(from, from + limit - 1);
-    
-    if (type) {
-      query = query.eq('type', type);
-    }
     
     const { data, error } = await query;
     
@@ -38,7 +26,7 @@ export async function getPokemons(type?: string) {
     
     if (!data || data.length === 0) break;
     
-    allData = [...allData, ...data];
+    allData.push(...data as Pokemon[]);
     
     if (data.length < limit) break;
     

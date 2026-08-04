@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { getPokemons } from '@/lib/pokemonService';
+import { getPokemons } from '@/lib/pokemonCatalog';
 import PokedexList from '@/components/PokedexList';
 
 export default async function Pokedex() {

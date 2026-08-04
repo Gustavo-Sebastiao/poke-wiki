@@ -2,11 +2,13 @@
   "name": "pokewiki",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "data:pokemons": "node scripts/generatePokemons.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.0",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Pokemon } from "@/lib/pokemonService";
+import type { Pokemon } from "@/lib/pokemonCatalog";
 import { deletePokemonAction, getAdminPokemonsAction } from "@/app/actions/pokemonActions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";

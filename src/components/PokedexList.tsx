@@ -4,8 +4,8 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PokemonCard from '@/components/PokemonCard';
 import PokemonModal from '@/components/PokemonModal';
-import { Search, ChevronLeft, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
-import type { Pokemon } from '@/lib/pokemonService';
+import { Search, ChevronLeft, ChevronRight, Filter, X, ChevronDown } from 'lucide-react';
+import type { Pokemon } from '@/lib/pokemonCatalog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translations } from '@/lib/translations';
 import Image from 'next/image';
@@ -55,6 +55,10 @@ function getPokemonIdFromUrl(url?: string): number | null {
     return parseInt(match[1], 10);
   }
   return null;
+}
+
+function restoreToggle(value: unknown): boolean {
+  return value === true || value === 'true';
 }
 
 const ToggleSwitch = ({ label, checked, onChange }: { label: string, checked: boolean, onChange: () => void }) => (
@@ -107,11 +111,11 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         if (parsed.selectedTypes !== undefined) setSelectedTypes(parsed.selectedTypes);
         if (parsed.selectedGenerations !== undefined) setSelectedGenerations(parsed.selectedGenerations);
         if (parsed.selectedRarities !== undefined) setSelectedRarities(parsed.selectedRarities);
-        if (parsed.showMegas !== undefined) setShowMegas(parsed.showMegas === 'true');
-      if (parsed.showAlolas !== undefined) setShowAlolas(parsed.showAlolas === 'true');
-      if (parsed.showGalar !== undefined) setShowGalar(parsed.showGalar === 'true');
-      if (parsed.showHisui !== undefined) setShowHisui(parsed.showHisui === 'true');
-      if (parsed.showPaldea !== undefined) setShowPaldea(parsed.showPaldea === 'true');
+        if (parsed.showMegas !== undefined) setShowMegas(restoreToggle(parsed.showMegas));
+        if (parsed.showAlolas !== undefined) setShowAlolas(restoreToggle(parsed.showAlolas));
+        if (parsed.showGalar !== undefined) setShowGalar(restoreToggle(parsed.showGalar));
+        if (parsed.showHisui !== undefined) setShowHisui(restoreToggle(parsed.showHisui));
+        if (parsed.showPaldea !== undefined) setShowPaldea(restoreToggle(parsed.showPaldea));
         if (parsed.sortOrder !== undefined) setSortOrder(parsed.sortOrder);
       } catch (e) {}
     }
@@ -128,6 +132,10 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
       selectedGenerations,
       selectedRarities,
       showMegas,
+      showAlolas,
+      showGalar,
+      showHisui,
+      showPaldea,
       sortOrder
     };
     sessionStorage.setItem('pokedex_state', JSON.stringify(stateToSave));
@@ -165,8 +173,8 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
     setCurrentPage(1);
   };
 
-  const handleToggleSort = (order: string) => {
-    setSortOrder(prev => prev === order ? null : order);
+  const handleSortChange = (order: string) => {
+    setSortOrder(order || null);
     setCurrentPage(1);
   };
 
@@ -383,7 +391,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         </div>
       </div>
 
-      {/* Mobile Search & Menu Row */}
+      {/* Mobile Search & Filters Row */}
       <div className="md:hidden flex items-center mb-12 gap-3 w-full bg-transparent relative z-20">
         {showMobileSearch ? (
           <div className="flex-1 relative flex items-center bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden animate-fade-in">
@@ -409,7 +417,7 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
               className="flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-110 transition-all drop-shadow-sm"
               title="Filtros"
             >
-              <Menu className="w-7 h-7" />
+              <Filter className="w-7 h-7" />
             </button>
             <button 
               onClick={() => setShowMobileSearch(true)}
@@ -523,47 +531,44 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
           )}
         </div>
 
-        {/* Dropdown Ordenar */}
+        {/* Ordenação */}
         <div className="relative w-full md:w-auto">
-          <button 
-            onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
-            className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'sort' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+          <select
+            aria-label={t.sortBy}
+            value={sortOrder ?? ''}
+            onChange={(event) => handleSortChange(event.target.value)}
+            className="w-full appearance-none px-4 pr-10 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold shadow-md border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-[#59F7E2] focus:outline-none focus:ring-2 focus:ring-[#59F7E2]/30 transition-colors cursor-pointer"
           >
-            {t.sortBy} {sortOrder === 'alpha' ? t.sortAlpha : sortOrder === 'rarity' ? t.sortRarity : sortOrder === 'gen' ? t.sortGen : sortOrder === 'element' ? t.sortElement : t.sortDefault}
-            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
-          </button>
-          
-          {openDropdown === 'sort' && (
-            <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[280px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">{t.order}</h3>
-              <div className="flex flex-col gap-2">
-                <ToggleSwitch label={t.listAlpha} checked={sortOrder === 'alpha'} onChange={() => handleToggleSort('alpha')} />
-                <ToggleSwitch label={t.listRarity} checked={sortOrder === 'rarity'} onChange={() => handleToggleSort('rarity')} />
-                <ToggleSwitch label={t.listGen} checked={sortOrder === 'gen'} onChange={() => handleToggleSort('gen')} />
-                <ToggleSwitch label={t.listElement} checked={sortOrder === 'element'} onChange={() => handleToggleSort('element')} />
-              </div>
-            </div>
-          )}
+            <option value="">{t.sortBy}: {t.sortDefault}</option>
+            <option value="alpha">{t.sortBy}: {t.sortAlpha}</option>
+            <option value="rarity">{t.sortBy}: {t.sortRarity}</option>
+            <option value="gen">{t.sortBy}: {t.sortGen}</option>
+            <option value="element">{t.sortBy}: {t.sortElement}</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 w-4 h-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
         </div>
 
-        {/* Dropdown Opções Extras */}
+        {/* Dropdown Formas Especiais */}
         <div className="relative w-full md:w-auto">
           <button 
             onClick={() => setOpenDropdown(openDropdown === 'options' ? null : 'options')}
             className={`w-full px-4 py-3 md:py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl md:rounded-full text-sm font-semibold transition-all flex items-center justify-between md:justify-center gap-2 shadow-md border-2 md:hover:scale-105 whitespace-nowrap ${openDropdown === 'options' ? 'border-[#59F7E2] bg-teal-50/50 dark:bg-teal-900/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
           >
-            {(showMegas || showAlolas || showGalar || showHisui || showPaldea) ? `${t.showing} ${[showMegas && 'Megas', showAlolas && 'Alola', showGalar && 'Galar', showHisui && 'Hisui', showPaldea && 'Paldea'].filter(Boolean).join(' & ')}` : t.otherOptions}
+            {(showMegas || showAlolas || showGalar || showHisui || showPaldea) ? `${[showMegas, showAlolas, showGalar, showHisui, showPaldea].filter(Boolean).length} ${t.formsSelected}` : t.specialForms}
             <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${openDropdown === 'options' ? 'rotate-180' : ''}`} />
           </button>
           
           {openDropdown === 'options' && (
             <div className="absolute z-50 flex flex-col animate-fade-in-down bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl p-4 rounded-2xl md:top-14 md:left-0 md:w-[240px] max-md:fixed max-md:bottom-0 max-md:left-0 max-md:w-full max-md:rounded-b-none max-md:rounded-t-3xl max-md:shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] max-md:pb-10 max-md:z-[100]">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-3">{t.options}</h3>
-              <ToggleSwitch label={t.showMegas} checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showAlola} checked={showAlolas} onChange={() => { setShowAlolas(!showAlolas); setCurrentPage(1); }} />
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{t.specialForms}</h3>
+              <p className="mt-1 mb-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{t.specialFormsHelp}</p>
+              <div className="flex flex-col gap-2">
+                <ToggleSwitch label={t.showMegas} checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showAlola} checked={showAlolas} onChange={() => { setShowAlolas(!showAlolas); setCurrentPage(1); }} />
                 <ToggleSwitch label={t.showGalar} checked={showGalar} onChange={() => { setShowGalar(!showGalar); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showHisui} checked={showHisui} onChange={() => { setShowHisui(!showHisui); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showPaldea} checked={showPaldea} onChange={() => { setShowPaldea(!showPaldea); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showHisui} checked={showHisui} onChange={() => { setShowHisui(!showHisui); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showPaldea} checked={showPaldea} onChange={() => { setShowPaldea(!showPaldea); setCurrentPage(1); }} />
+              </div>
             </div>
           )}
         </div>
@@ -579,12 +584,12 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
         )}
       </div>
 
-      {/* Menu Modal de Filtros Mobile */}
+      {/* Modal de Filtros Mobile */}
       {showMobileFilters && (
         <div className="fixed inset-0 bg-white dark:bg-slate-800 z-[200] flex flex-col md:hidden animate-fade-in-down overflow-hidden">
           {/* Header */}
           <div className="flex-none flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><Menu className="w-6 h-6 text-[#59F7E2]"/> Filtros</h2>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><Filter className="w-6 h-6 text-[#59F7E2]"/> Filtros</h2>
             <button onClick={() => setShowMobileFilters(false)} className="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-full text-slate-600 dark:text-slate-300 transition-colors">
               <X className="w-6 h-6" />
             </button>
@@ -658,22 +663,34 @@ export default function PokedexList({ initialPokemons }: PokedexListProps) {
             {/* Ordenação */}
             <div>
               <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.order}</h3>
-              <div className="flex flex-col gap-4">
-                <ToggleSwitch label={t.listAlpha} checked={sortOrder === 'alpha'} onChange={() => handleToggleSort('alpha')} />
-                <ToggleSwitch label={t.listRarity} checked={sortOrder === 'rarity'} onChange={() => handleToggleSort('rarity')} />
-                <ToggleSwitch label={t.listGen} checked={sortOrder === 'gen'} onChange={() => handleToggleSort('gen')} />
-                <ToggleSwitch label={t.listElement} checked={sortOrder === 'element'} onChange={() => handleToggleSort('element')} />
+              <div className="relative">
+                <select
+                  aria-label={t.sortBy}
+                  value={sortOrder ?? ''}
+                  onChange={(event) => handleSortChange(event.target.value)}
+                  className="w-full appearance-none rounded-xl border-2 border-slate-200 bg-white px-4 py-3 pr-10 text-base font-medium text-slate-700 transition-colors cursor-pointer hover:border-slate-300 focus:border-[#59F7E2] focus:outline-none focus:ring-2 focus:ring-[#59F7E2]/30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600"
+                >
+                  <option value="">{t.sortDefault}</option>
+                  <option value="alpha">{t.sortAlpha}</option>
+                  <option value="rarity">{t.sortRarity}</option>
+                  <option value="gen">{t.sortGen}</option>
+                  <option value="element">{t.sortElement}</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 w-5 h-5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               </div>
             </div>
             
-            {/* Outras opções */}
+            {/* Formas especiais */}
             <div>
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.options}</h3>
-              <ToggleSwitch label={t.showMegas} checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showAlola} checked={showAlolas} onChange={() => { setShowAlolas(!showAlolas); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showGalar} checked={showGalar} onChange={() => { setShowGalar(!showGalar); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showHisui} checked={showHisui} onChange={() => { setShowHisui(!showHisui); setCurrentPage(1); }} />
-              <ToggleSwitch label={t.showPaldea} checked={showPaldea} onChange={() => { setShowPaldea(!showPaldea); setCurrentPage(1); }} />
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg border-b border-slate-100 dark:border-slate-700 pb-2">{t.specialForms}</h3>
+              <p className="mt-2 mb-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{t.specialFormsHelp}</p>
+              <div className="flex flex-col gap-3">
+                <ToggleSwitch label={t.showMegas} checked={showMegas} onChange={() => { setShowMegas(!showMegas); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showAlola} checked={showAlolas} onChange={() => { setShowAlolas(!showAlolas); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showGalar} checked={showGalar} onChange={() => { setShowGalar(!showGalar); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showHisui} checked={showHisui} onChange={() => { setShowHisui(!showHisui); setCurrentPage(1); }} />
+                <ToggleSwitch label={t.showPaldea} checked={showPaldea} onChange={() => { setShowPaldea(!showPaldea); setCurrentPage(1); }} />
+              </div>
             </div>
           </div>
           

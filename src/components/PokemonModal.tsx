@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Star } from 'lucide-react';
+import { X } from 'lucide-react';
 import { tagImages } from '@/components/TagSelector';
-import type { Pokemon } from '@/lib/pokemonService';
+import type { Pokemon } from '@/lib/pokemonCatalog';
 import { getPokemonDetailsAction } from '@/app/actions/dataActions';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatPokemonName, translateHabitat, translateStat } from '@/lib/formatters';
@@ -121,10 +121,18 @@ export default function PokemonModal({ pokemon, onClose, onSelectPokemon }: Poke
               {/* Botão Shiny */}
               <button 
                 onClick={() => setIsShiny(!isShiny)}
-                className={`absolute top-6 left-6 z-20 p-2 transition-transform hover:scale-110 ${isShiny ? 'text-yellow-400 drop-shadow-md' : 'text-slate-400 dark:text-slate-500 hover:text-yellow-400'}`}
+                className="absolute top-6 left-6 z-20 p-2 transition-transform hover:scale-110"
                 title="Alternar Versão Shiny"
+                aria-label={isShiny ? 'Alternar para versão normal' : 'Alternar para versão Shiny'}
+                aria-pressed={isShiny}
               >
-                <Star className="w-8 h-8" />
+                <Image
+                  src={isShiny ? '/shiny.svg' : '/nonshiny.svg'}
+                  alt=""
+                  width={32}
+                  height={32}
+                  aria-hidden="true"
+                />
               </button>
               
               <div className="relative w-full aspect-square flex items-center justify-center transition-transform duration-700 group-hover:scale-105 z-10">

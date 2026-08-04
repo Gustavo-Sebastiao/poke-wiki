@@ -6,13 +6,17 @@ import { translateTextAction } from "@/app/actions/dataActions";
 
 // Simples cache em memória para a sessão atual
 const translationCache = new Map<string, string>();
+const SOURCE_LANGUAGE = "pt";
 
 export function useDynamicTranslation(originalText: string) {
   const { language } = useLanguage();
   const [translatedText, setTranslatedText] = useState<string>(originalText);
   const [loading, setLoading] = useState(false);
+  const shouldTranslate = Boolean(originalText) && language !== SOURCE_LANGUAGE;
+
   useEffect(() => {
-    if (!originalText) return;
+    // As descrições já estão no idioma de origem; só outros idiomas precisam de tradução.
+    if (!shouldTranslate) return;
 
     // Cria uma chave única para o cache baseada no texto e no idioma
     const cacheKey = `${language}:${originalText}`;
@@ -40,10 +44,10 @@ export function useDynamicTranslation(originalText: string) {
     };
 
     fetchTranslation();
-  }, [originalText, language]);
+  }, [originalText, language, shouldTranslate]);
 
   return {
-    translatedText: originalText ? translatedText : "",
-    loading: originalText ? loading : false,
+    translatedText: shouldTranslate ? translatedText : originalText,
+    loading: shouldTranslate && loading,
   };
 }

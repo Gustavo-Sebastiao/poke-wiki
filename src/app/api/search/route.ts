@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { getPokemons } from '@/lib/pokemonCatalog';
 import itemsData from '@/data/items.json';
+
+type SearchResult = {
+  id: string | number;
+  name: string;
+  image_url: string;
+  type: 'pokemon' | 'item';
+};
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -14,51 +21,32 @@ export async function GET(request: Request) {
   
   try {
     // 1. Buscar Pokémons
-    let pokemonQuery = supabaseAdmin
-      .from('pokemons')
-      .select('id, name, image_url')
-      .limit(5);
-
-    if (!isNaN(Number(query))) {
-      pokemonQuery = pokemonQuery.eq('id', Number(query));
-    } else {
-      pokemonQuery = pokemonQuery.ilike('name', `%${query}%`);
-    }
-
-    const { data: pokemons, error } = await pokemonQuery;
-
-    if (error) {
-      console.error('Search error (Supabase):', error);
-    }
+    const allPokemons = await getPokemons();
+    const pokemons = allPokemons.filter((pokemon) => (
+      pokemon.id === query || pokemon.name.toLowerCase().includes(query)
+    )).slice(0, 5);
 
     // 2. Buscar Itens
     // Lendo do JSON local em memória
-    let matchedItems = itemsData.filter((item: any) => 
+    const matchedItems = itemsData.filter((item) =>
       item.name.toLowerCase().includes(query) || item.id.toString() === query
     ).slice(0, 5);
 
     // 3. Formatar e Unir Resultados
-    const results: any[] = [];
-
-    if (pokemons) {
-      pokemons.forEach((p: any) => {
-        results.push({
-          id: p.id,
-          name: p.name,
-          image_url: p.image_url,
-          type: 'pokemon',
-        });
-      });
-    }
-
-    matchedItems.forEach((i: any) => {
-      results.push({
-        id: i.id,
-        name: i.name,
-        image_url: i.image_url,
-        type: 'item',
-      });
-    });
+    const results: SearchResult[] = [
+      ...pokemons.map((pokemon) => ({
+        id: pokemon.id ?? '',
+        name: pokemon.name,
+        image_url: pokemon.image_url ?? '',
+        type: 'pokemon' as const,
+      })),
+      ...matchedItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        image_url: item.image_url,
+        type: 'item' as const,
+      })),
+    ];
 
     return NextResponse.json({ results });
   } catch (error) {
