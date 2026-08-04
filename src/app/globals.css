@@ -22,6 +22,14 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.nav-menu-letter {
+  font-weight: 500;
+}
+
+.nav-menu-letter-measure {
+  font-weight: 700;
+}
+
 @keyframes fadeInRight {
   0% {
     opacity: 0;
