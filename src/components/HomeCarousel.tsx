@@ -10,6 +10,7 @@ import pikachuImg from "@/assets/images/stat-pikachu-Photoroom.png";
 import sylveonImg from "@/assets/images/stat-sylveon.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/lib/translations";
+import FanDisclaimerMarquee from "@/components/FanDisclaimerMarquee";
 
 const getSlides = (lang: 'pt' | 'en') => {
   const t = translations[lang].carousel.slides;
@@ -234,16 +235,21 @@ export default function HomeCarousel() {
       </div>
       
       {/* Indicators (Dots) */}
-      <div className="absolute bottom-6 left-1/2 md:left-[30%] transform -translate-x-1/2 z-40 flex gap-2">
+      <div className="absolute bottom-10 md:bottom-11 left-1/2 md:left-[30%] transform -translate-x-1/2 z-40 flex gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrent(index)}
             className={`w-3 h-3 rounded-full transition-all ${
-              current === index ? "bg-slate-800 w-8" : "bg-slate-300 hover:bg-slate-400"
+              current === index ? "bg-slate-800 dark:bg-white w-8" : "bg-slate-300 dark:bg-slate-700 hover:bg-slate-400"
             }`}
           />
         ))}
+      </div>
+
+      {/* Discrete Fan Disclaimer Marquee Ticker */}
+      <div className="absolute bottom-0 inset-x-0 z-40">
+        <FanDisclaimerMarquee />
       </div>
 
     </div>
