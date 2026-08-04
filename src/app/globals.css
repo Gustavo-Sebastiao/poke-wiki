@@ -30,20 +30,6 @@ body {
   font-weight: 700;
 }
 
-.site-header-fade {
-  background-color: #ffffff;
-  mask-image: url("/header-fade-mask.png");
-  mask-repeat: repeat-x;
-  mask-size: auto 8rem;
-  -webkit-mask-image: url("/header-fade-mask.png");
-  -webkit-mask-repeat: repeat-x;
-  -webkit-mask-size: auto 8rem;
-}
-
-.dark .site-header-fade {
-  background-color: #0f172a;
-}
-
 @keyframes fadeInRight {
   0% {
     opacity: 0;
